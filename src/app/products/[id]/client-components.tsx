@@ -183,7 +183,11 @@ function RelatedProducts({ currentProductId, category }: { currentProductId: str
           <Link href={`/product/${product.id}`} key={product.id} className="group relative">
             <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100 group-hover:opacity-90 transition-opacity">
               <Image
-                src={product.images && product.images.length > 0 ? product.images[0] : '/images/placeholder.jpg'}
+                src={product.images && product.images.length > 0 
+                  ? (typeof product.images[0] === 'string' 
+                    ? product.images[0] 
+                    : product.images[0].url) 
+                  : '/images/placeholder.jpg'}
                 alt={product.title}
                 width={300}
                 height={300}

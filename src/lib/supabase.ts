@@ -1,11 +1,27 @@
 import { createClient } from '@supabase/supabase-js'
 
+export interface Database {
+  public: {
+    Tables: {
+      product_images: {
+        Row: {
+          id: string;
+          product_id: string;
+          url: string;
+          display_order: number;
+        };
+      };
+      // Tilføj andre tabeller her efter behov
+    };
+  };
+}
+
 // Sikr at environment variabler er tilgængelige
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 // Foretag en validering for at undgå fejl
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl || !supabaseKey) {
   console.warn('Supabase URL eller anonym nøgle er ikke defineret i miljøvariablerne');
 }
 
@@ -47,7 +63,7 @@ const supabaseOptions = {
 }
 
 // Global instans (singleton) som deles mellem server og klient
-let clientSingleton: ReturnType<typeof createClient> | null = null;
+let clientSingleton: ReturnType<typeof createClient<Database>> | null = null;
 
 /**
  * Returnerer en Supabase-klient instans med optimerede indstillinger
@@ -59,7 +75,7 @@ export function getSupabaseClient() {
   }
   
   // Opret en ny instans
-  clientSingleton = createClient(supabaseUrl, supabaseAnonKey, supabaseOptions);
+  clientSingleton = createClient<Database>(supabaseUrl, supabaseKey, supabaseOptions);
 
   // Hvis vi er i browser-miljø, gem sessioninfo i localStorage som backup
   if (typeof window !== 'undefined') {
@@ -99,3 +115,5 @@ export function getSupabaseClient() {
 
 // VIGTIGT: Eksporter ikke en direkte instans mere - brug altid getSupabaseClient funktionen
 // export const supabase = getSupabaseClient() // Fjernet for at undgå unødvendige, ukoordinerede instanser 
+
+export default getSupabaseClient(); 

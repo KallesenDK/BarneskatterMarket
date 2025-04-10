@@ -29,9 +29,6 @@ export default async function DashboardPage({
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
   try {
-    // Tjek om vi kommer fra login-siden med auth-parameter
-    const authParam = searchParams.auth;
-    
     // Opret Supabase klient med cookies fra anmodningen
     const cookieStore = cookies();
     const supabase = createServerComponentClient({ 
@@ -39,20 +36,27 @@ export default async function DashboardPage({
     });
     
     // Tjek om brugeren er logget ind
-    const { data, error } = await supabase.auth.getSession();
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    console.log('Dashboard søgeparametre:', searchParams);
-    console.log('Session status på server:', data.session ? 'Aktiv' : 'Ingen');
-    
-    if (!data.session) {
+    if (sessionError || !session) {
+      console.error('Session fejl:', sessionError);
       return <AuthError />;
     }
 
-    // Tjek om brugeren er admin
-    const isAdmin = data.session.user.email === 'kenneth@sigmatic.dk';
-    
+    // Hent brugerens profil for at tjekke rolle
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    if (profileError) {
+      console.error('Profil fejl:', profileError);
+      return <AuthError />;
+    }
+
     // Omdiriger baseret på brugerens rolle
-    if (isAdmin) {
+    if (profile?.role === 'admin') {
       redirect('/dashboard/admin');
     } else {
       redirect('/dashboard/user');

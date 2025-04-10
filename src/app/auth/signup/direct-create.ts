@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { getSupabaseClient } from '@/lib/supabase'
+import supabase from '@/lib/supabase'
 
 // Dette er en hjælpefunktion, der opretter en profil direkte i databasen
 // Dette bruges som en fallback, hvis trigger-metoden fejler
@@ -66,61 +66,47 @@ export async function createProfileDirectly(
 }
 
 // Direkte brugeroprettelse på serveren (bruges af API route)
-export async function directUserSignup(email: string, password: string, userData: any) {
+export async function createUser(
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string,
+  address: string,
+  postalCode: string,
+  phone: string
+) {
   try {
-    // Brug den fælles supabase klient
-    const supabase = getSupabaseClient();
-    
+    if (!supabase) {
+      throw new Error('Supabase klient er ikke initialiseret');
+    }
+
     // 1. Opret brugeren i Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
     });
 
-    if (authError) {
-      console.error('Fejl ved oprettelse af bruger i Supabase Auth:', authError);
-      return { success: false, error: authError.message };
-    }
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Ingen bruger returneret fra auth');
 
-    if (!authData.user) {
-      console.error('Ingen bruger returneret efter oprettelse');
-      return { success: false, error: 'Brugeroprettelse fejlede' };
-    }
-
-    // 2. Tilføj bruger data til profiles tabel
-    const { data: profileData, error: profileError } = await supabase
+    // 2. Opret brugerens profil i profiles tabellen
+    const { error: profileError } = await supabase
       .from('profiles')
       .insert({
         id: authData.user.id,
-        first_name: userData.firstName,
-        last_name: userData.lastName,
-        email: email,
-        address: userData.address || null,
-        postal_code: userData.postalCode || null,
-        phone: userData.phone || null,
-        credits: 0,
-        created_at: new Date(),
-        updated_at: new Date()
+        first_name: firstName,
+        last_name: lastName,
+        address,
+        postal_code: postalCode,
+        phone,
+        email,
       });
 
-    if (profileError) {
-      console.error('Fejl ved oprettelse af bruger profil:', profileError);
-      return { success: false, error: profileError.message };
-    }
+    if (profileError) throw profileError;
 
-    return { 
-      success: true, 
-      data: { 
-        userId: authData.user.id,
-        email: authData.user.email
-      } 
-    };
-
+    return { success: true, user: authData.user };
   } catch (error) {
-    console.error('Uventet fejl ved brugeroprettelse:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Ukendt fejl' 
-    };
+    console.error('Fejl ved oprettelse af bruger:', error);
+    return { success: false, error };
   }
 } 

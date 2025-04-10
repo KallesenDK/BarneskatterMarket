@@ -204,8 +204,7 @@ export default function MockProductCard({ product }: MockProductCardProps) {
       price: (product.discountActive || product.discount_active)
         ? (product.discount_price || product.discountPrice || product.price)
         : product.price,
-      image: imageUrl,
-      description: product.description
+      image: imageUrl
     });
   };
 

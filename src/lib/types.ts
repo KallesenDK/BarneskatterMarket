@@ -1,19 +1,15 @@
 export interface Profile {
   id: string;
-  firstName?: string;
-  lastName?: string;
   first_name?: string;
   last_name?: string;
   address?: string;
-  postalCode?: string;
   postal_code?: string;
   phone?: string;
   banned_until?: Date;
   credits: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  created_at?: Date;
-  updated_at?: Date;
+  is_admin?: boolean;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface Product {
@@ -72,10 +68,11 @@ export interface Message {
   id: string;
   sender_id: string;
   receiver_id: string;
-  product_id: string;
   content: string;
-  read: boolean;
+  product_id?: string;
   created_at: Date;
+  updated_at: Date;
+  read: boolean;
   sender?: Profile;
   receiver?: Profile;
 }

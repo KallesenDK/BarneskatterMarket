@@ -16,7 +16,7 @@ interface CleanProduct extends Omit<Product, 'id' | 'user'> {
  * @param products Produkter der skal saniteres
  * @returns Saniterede produkter uden ID'er og UUID'er
  */
-export function useSanitizedProducts(products: Product[]): Product[] {
+export function useSanitizedProducts(products: Product[]): Partial<Product>[] {
   return useMemo(() => {
     if (!products || products.length === 0) {
       return [];
@@ -43,20 +43,21 @@ export function useSanitizedProducts(products: Product[]): Product[] {
 /**
  * Hjælpefunktion til at fjerne ID-relaterede data fra et produkt
  */
-export function removeId(product: Product): Product {
+export function removeId(product: Product): Partial<Product> {
   if (!product) return product;
   
-  const cleanProduct = { ...product };
-  
-  // Slet ID felter fra produkt
-  delete cleanProduct.id;
-  delete cleanProduct.user_id;
-  delete cleanProduct.userId;
-  
-  // Fjern også bruger ID hvis det findes
-  if (cleanProduct.user) {
-    cleanProduct.user = { ...cleanProduct.user };
-    delete cleanProduct.user.id;
+  const {
+    id,
+    user_id,
+    userId,
+    user,
+    ...cleanProduct
+  } = product;
+
+  // Håndter user objekt hvis det findes
+  if (user) {
+    const { id: userId, ...cleanUser } = user;
+    cleanProduct.user = cleanUser;
   }
   
   return cleanProduct;

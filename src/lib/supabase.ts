@@ -30,7 +30,6 @@ const AUTH_COOKIE_NAME = 'sb-auth-token';
 
 /**
  * Forbedrede indstillinger for bedre session-håndtering
- * Disse indstillinger fokuserer på at sikre session bevares både i cookies og localStorage
  */
 const supabaseOptions = {
   auth: {
@@ -52,57 +51,51 @@ const supabaseOptions = {
   global: {
     headers: { 'x-client-info': 'supabase-js/2.x' }
   },
-  // Disse indstillinger er vigtige for at Next.js Edge funktioner kan fungere
   realtime: {
     params: {
       eventsPerSecond: 10
     }
   },
-  // Sikkerhedsindstillinger
   persistSession: true,
-}
+} as const;
 
-// Global instans (singleton) som deles mellem server og klient
-let clientSingleton: ReturnType<typeof createClient<Database>> | null = null;
+// Definer typen for vores Supabase klient
+type TypedSupabaseClient = ReturnType<typeof createClient<Database>>;
+
+// Global instans (singleton)
+let clientSingleton: TypedSupabaseClient | null = null;
 
 /**
- * Returnerer en Supabase-klient instans med optimerede indstillinger
- * for session-håndtering og Next.js kompatibilitet
+ * Returnerer en Supabase-klient instans
  */
-export function getSupabaseClient() {
+export function getSupabaseClient(): TypedSupabaseClient {
   if (clientSingleton) {
     return clientSingleton;
   }
   
-  // Opret en ny instans
-  clientSingleton = createClient<Database>(supabaseUrl, supabaseKey, supabaseOptions);
+  clientSingleton = createClient<Database>(
+    supabaseUrl,
+    supabaseKey,
+    supabaseOptions
+  );
 
-  // Hvis vi er i browser-miljø, gem sessioninfo i localStorage som backup
   if (typeof window !== 'undefined') {
-    // Ekstra sikkerhedsforanstaltning: Gem auth cookie på window.document
-    // Dette hjælper til at middleware kan finde cookien
     clientSingleton.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        // Gem cookie lokalt som et ekstra sikkerhedsnet
         document.cookie = `${AUTH_COOKIE_NAME}=${session.access_token}; path=/; max-age=${60*60*24*7}; SameSite=Lax`;
-        
-        // Gem også bruger-ID i localStorage for let adgang
         if (session.user?.id) {
           localStorage.setItem('userId', session.user.id);
         }
       }
       
       if (event === 'SIGNED_OUT') {
-        // Ryd cookie ved logout
         document.cookie = `${AUTH_COOKIE_NAME}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
         localStorage.removeItem('userId');
       }
     });
     
-    // Tjek om der er en aktiv session ved start
     clientSingleton.auth.getSession().then(({ data, error }) => {
       if (data.session) {
-        // Gem cookie lokalt igen, for at sikre den er frisk
         document.cookie = `${AUTH_COOKIE_NAME}=${data.session.access_token}; path=/; max-age=${60*60*24*7}; SameSite=Lax`;
       } else if (error) {
         console.error('Fejl ved tjek af session:', error.message);
@@ -112,8 +105,5 @@ export function getSupabaseClient() {
   
   return clientSingleton;
 }
-
-// VIGTIGT: Eksporter ikke en direkte instans mere - brug altid getSupabaseClient funktionen
-// export const supabase = getSupabaseClient() // Fjernet for at undgå unødvendige, ukoordinerede instanser 
 
 export default getSupabaseClient(); 

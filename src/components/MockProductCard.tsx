@@ -194,10 +194,14 @@ export default function MockProductCard({ product }: MockProductCardProps) {
     addItem({
       id: product.id,
       title: product.title,
-      price: (product.discountActive || product.discount_active) 
-        ? (product.discount_price || product.discountPrice || product.price)
+      price: 
+        product.discount_price || product.discountPrice || product.price
         : product.price,
-      image: product.image_url || product.images?.[0]
+      image: product.image_url || (product.images?.[0] 
+        ? (typeof product.images[0] === 'string' 
+          ? product.images[0] 
+          : product.images[0].url)
+        : undefined)
     });
   };
 

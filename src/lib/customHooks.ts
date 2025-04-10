@@ -148,15 +148,15 @@ export function applyFilters<T extends boolean>(
   switch (sortOption) {
     case 'price-low':
       result.sort((a, b) => {
-        const priceA = a.discountActive && a.discount_price ? a.discount_price : a.price;
-        const priceB = b.discountActive && b.discount_price ? b.discount_price : b.price;
+        const priceA = (a.discountActive && a.discount_price ? a.discount_price : (a.price ?? 0)) ?? 0;
+        const priceB = (b.discountActive && b.discount_price ? b.discount_price : (b.price ?? 0)) ?? 0;
         return priceA - priceB;
       });
       break;
     case 'price-high':
       result.sort((a, b) => {
-        const priceA = a.discountActive && a.discount_price ? a.discount_price : a.price;
-        const priceB = b.discountActive && b.discount_price ? b.discount_price : b.price;
+        const priceA = (a.discountActive && a.discount_price ? a.discount_price : (a.price ?? 0)) ?? 0;
+        const priceB = (b.discountActive && b.discount_price ? b.discount_price : (b.price ?? 0)) ?? 0;
         return priceB - priceA;
       });
       break;

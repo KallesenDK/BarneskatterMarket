@@ -127,8 +127,8 @@ export function applyFilters<T extends boolean>(
     product => {
       const effectivePrice = product.discountActive && product.discount_price 
         ? product.discount_price 
-        : product.price;
-      return effectivePrice >= priceRange[0] && effectivePrice <= priceRange[1];
+        : (product.price ?? 0);
+      return (effectivePrice ?? 0) >= (priceRange?.[0] ?? 0) && (effectivePrice ?? 0) <= (priceRange?.[1] ?? Infinity);
     }
   ) as T extends true ? Product[] : Partial<Product>[];
   

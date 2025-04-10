@@ -84,7 +84,7 @@ export interface CreditPackage {
   active: boolean;
 }
 
-export type SubscriptionPackage = {
+export interface SubscriptionPackage {
   id: string;
   name: string;
   description: string | null;
@@ -92,17 +92,21 @@ export type SubscriptionPackage = {
   product_limit: number;
   price: number;
   is_active: boolean;
+  is_popular: boolean;
+  discount_price: number | null;
+  discount_start_date: string | null;
+  discount_end_date: string | null;
   created_at: string;
   updated_at: string;
-};
+}
 
-export type ProductSlot = {
+export interface ProductSlot {
   id: string;
   name: string;
   description: string | null;
-  slot_count: number;
+  slots: number;
   price: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
-}; 
+} 

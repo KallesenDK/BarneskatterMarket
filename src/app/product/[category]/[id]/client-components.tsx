@@ -204,15 +204,21 @@ function ModernProductDetails({ product, urlCategory }: { product: Product, urlC
   const isInCart = items.some(item => item.id === product.id);
 
   const handleAddToCart = () => {
-    const firstImage = product.images?.[0];
-    const imageUrl = product.image_url || 
-      (typeof firstImage === 'string' ? firstImage : firstImage?.url);
+    // Håndter billede URL
+    let imageUrl: string | undefined;
+    
+    if (product.image_url) {
+      imageUrl = product.image_url;
+    } else if (product.images && product.images.length > 0) {
+      const firstImage = product.images[0];
+      imageUrl = typeof firstImage === 'string' ? firstImage : firstImage?.url;
+    }
 
     addItem({
       id: product.id,
       title: product.title,
       price: product.discountActive ? (product.discount_price || product.discountPrice || product.price) : product.price,
-      image: imageUrl
+      image: imageUrl || ''
     });
   };
 

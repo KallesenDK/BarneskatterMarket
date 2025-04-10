@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Skjul UUID'er og ID'er */
+[class*="f2803689"],
+[id*="f2803689"],
+[data-uuid],
+[class*="-uuid-"] {
+  display: none !important;
+}
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+    
+    /* Baggrund */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    
+    /* Brand farver */
+    --brand-teal: 176 72% 38%;    /* #1AA49A */
+    --brand-pink: 334 77% 42%;    /* #BC1964 */
+    --brand-orange: 28 88% 52%;   /* #F08319 */
+    
+    /* UI farver */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+
+    /* Status farver */
+    --success: 142 72% 29%;
+    --warning: 28 88% 52%;
+    --error: 0 84% 60%;
+    --info: 176 72% 38%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply px-3 py-2 text-[#5f6368] text-sm rounded-full transition-colors hover:bg-[#BC1964] hover:text-white;
+  }
+
+  .nav-link-active {
+    @apply bg-[#BC1964] text-white font-medium;
+  }
+
+  .card {
+    @apply rounded-lg border shadow-sm transition-all duration-200;
+  }
+
+  .card-teal {
+    @apply bg-gradient-to-br from-[#1AA49A]/10 to-[#1AA49A]/5 hover:from-[#1AA49A]/15 hover:to-[#1AA49A]/10;
+  }
+
+  .card-pink {
+    @apply bg-gradient-to-br from-[#BC1964]/10 to-[#BC1964]/5 hover:from-[#BC1964]/15 hover:to-[#BC1964]/10;
+  }
+
+  .card-orange {
+    @apply bg-gradient-to-br from-[#F08319]/10 to-[#F08319]/5 hover:from-[#F08319]/15 hover:to-[#F08319]/10;
+  }
+
+  .button-primary {
+    @apply bg-[#1a73e8] text-white hover:bg-[#1557b0] inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8]/50 disabled:pointer-events-none disabled:opacity-50 h-10 px-6 py-2;
+  }
+
+  .button-secondary {
+    @apply bg-[#34a853] text-white hover:bg-[#2d8745] inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#34a853]/50 disabled:pointer-events-none disabled:opacity-50 h-10 px-6 py-2;
+  }
+
+  .button-outline {
+    @apply border border-primary text-primary bg-transparent hover:bg-primary/10 hover:text-primary inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:pointer-events-none disabled:opacity-50 h-9 px-4 py-2;
+  }
+
+  .input {
+    @apply flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+
+  .badge-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/80;
+  }
+
+  .badge-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .badge-outline {
+    @apply border-input bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .badge-status {
+    @apply px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-[#1AA49A]/10 text-[#BC1964];
+  }
+
+  .table-header {
+    @apply h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px];
+  }
+
+  .table-cell {
+    @apply p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px];
+  }
+
+  .table-row {
+    @apply border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted;
+  }
+}
+
+@layer utilities {
+  .bg-grid {
+    background-image: linear-gradient(to right, rgb(64 64 64 / 0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgb(64 64 64 / 0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+
+/* ================== Produktkort styling ================== */
+
+/* Grundlæggende produktkort layout */
+.product-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 425px;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card > div {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.product-card > div > div:last-child {
+  padding-bottom: 15px;
+  position: relative;
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+} 

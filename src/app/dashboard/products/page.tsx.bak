@@ -1,0 +1,433 @@
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { useSupabase } from '@/components/SupabaseProvider';
+import DashboardHeader from '../components/DashboardHeader';
+import { formatMoney, formatDate } from '@/lib/utils';
+
+type Product = {
+  id: string;
+  title: string;
+  price: number;
+  status: string;
+  created_at: string;
+  expires_at: string | null;
+  views: number;
+  featured: boolean;
+  category_name: string;
+  image_url: string | null;
+};
+
+export default function ProductsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { supabase } = useSupabase();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [successMessage, setSuccessMessage] = useState('');
+  
+  const justCreated = searchParams.get('created') === 'true';
+  
+  useEffect(() => {
+    // Hent bruger-ID først
+    const getUserId = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error || !user) {
+          router.push('/auth/signin');
+          return;
+        }
+        
+        setUserId(user.id);
+      } catch (error) {
+        console.error('Fejl ved hentning af bruger:', error);
+        router.push('/auth/signin');
+      }
+    };
+    
+    getUserId();
+  }, [supabase, router]);
+  
+  useEffect(() => {
+    // Kør kun fetchProducts når userId er sat
+    if (!userId) return;
+    
+    const fetchProducts = async () => {
+      setLoading(true);
+      
+      try {
+        // Forenklet forespørgsel uden at prøve at joine med categories
+        const { data, error } = await supabase
+          .from('products')
+          .select('id, title, price, status, created_at, expires_at, views, featured')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw error;
+        }
+        
+        // For hvert produkt, hent dets billeder separat
+        const productsWithImages = await Promise.all(
+          data.map(async (product) => {
+            // Hent billeder for dette produkt
+            const { data: images, error: imagesError } = await supabase
+              .from('product_images')
+              .select('url, display_order')
+              .eq('product_id', product.id)
+              .order('display_order', { ascending: true });
+            
+            if (imagesError) {
+              console.error(`Fejl ved hentning af billeder for produkt ${product.id}:`, imagesError);
+              return { ...product, image_url: null };
+            }
+            
+            // Tilføj første billedes URL til produktet eller null hvis ingen billeder
+            return { 
+              ...product, 
+              image_url: images && images.length > 0 ? images[0].url : null
+            };
+          })
+        );
+        
+        setProducts(productsWithImages);
+      } catch (error) {
+        console.error('Fejl ved hentning af produkter:', error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProducts();
+    
+    if (justCreated) {
+      setSuccessMessage('Dit produkt er blevet oprettet!');
+      
+      // Fjern success-besked efter 5 sekunder
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [supabase, router, justCreated, userId]);
+  
+  const toggleSelectProduct = (productId: string) => {
+    setSelectedProducts(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+  
+  const handleFeatureProduct = async (productId: string) => {
+    try {
+      // Find produktet
+      const product = products.find(p => p.id === productId);
+      
+      if (!product) return;
+      
+      // Skift featured status
+      const { error } = await supabase
+        .from('products')
+        .update({ featured: !product.featured })
+        .eq('id', productId);
+        
+      if (error) throw error;
+      
+      // Opdater produktlisten
+      setProducts(prev => prev.map(p => 
+        p.id === productId ? { ...p, featured: !p.featured } : p
+      ));
+      
+      setSuccessMessage(`Produkt ${product.featured ? 'fjernet fra' : 'tilføjet til'} fremhævede produkter!`);
+      
+      // Fjern success-besked efter 3 sekunder
+      setTimeout(() => setSuccessMessage(''), 3000);
+      
+    } catch (error) {
+      console.error('Fejl ved fremhævning af produkt:', error);
+    }
+  };
+  
+  const handleDeleteProducts = async () => {
+    if (!selectedProducts.length) return;
+    
+    if (!confirm(`Er du sikker på, at du vil slette ${selectedProducts.length} ${selectedProducts.length === 1 ? 'produkt' : 'produkter'}?`)) {
+      return;
+    }
+    
+    try {
+      // Slet produkterne
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .in('id', selectedProducts);
+        
+      if (error) throw error;
+      
+      // Opdater produktlisten
+      setProducts(prev => prev.filter(p => !selectedProducts.includes(p.id)));
+      
+      // Ryd valgte produkter
+      setSelectedProducts([]);
+      
+      setSuccessMessage(`${selectedProducts.length} ${selectedProducts.length === 1 ? 'produkt' : 'produkter'} slettet!`);
+      
+      // Fjern success-besked efter 3 sekunder
+      setTimeout(() => setSuccessMessage(''), 3000);
+      
+    } catch (error) {
+      console.error('Fejl ved sletning af produkter:', error);
+    }
+  };
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aktiv</span>;
+      case 'pending':
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Afventer</span>;
+      case 'sold':
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Solgt</span>;
+      case 'expired':
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Udløbet</span>;
+      default:
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">{status}</span>;
+    }
+  };
+  
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <DashboardHeader />
+        <div className="mt-8 p-6 bg-white rounded-lg shadow-sm animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <DashboardHeader />
+      
+      <div className="mt-8 bg-white rounded-lg shadow-sm">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Mine produkter</h1>
+              <p className="text-gray-600 mt-1">
+                {products.length === 0 ? 
+                  'Du har endnu ikke oprettet nogen produkter.' : 
+                  `Du har ${products.length} ${products.length === 1 ? 'produkt' : 'produkter'}.`}
+              </p>
+            </div>
+            <div className="mt-4 md:mt-0">
+              <Link 
+                href="/dashboard/create-product"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium"
+              >
+                Opret nyt produkt
+              </Link>
+            </div>
+          </div>
+        </div>
+        
+        {successMessage && (
+          <div className="bg-green-50 border-l-4 border-green-400 p-4 my-4 mx-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-green-700">
+                  {successMessage}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="p-6">
+          {products.length === 0 ? (
+            <div className="text-center py-12">
+              <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">Ingen produkter</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Du har ikke oprettet nogen produkter endnu. Kom i gang med at sælge ved at oprette dit første produkt.
+              </p>
+              <div className="mt-6">
+                <Link
+                  href="/dashboard/create-product"
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Opret dit første produkt
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="mb-4 flex justify-between items-center">
+                <div>
+                  {selectedProducts.length > 0 && (
+                    <button
+                      onClick={handleDeleteProducts}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm font-medium"
+                    >
+                      Slet valgte ({selectedProducts.length})
+                    </button>
+                  )}
+                </div>
+                <div className="text-sm text-gray-500">
+                  Tip: Klik på et produkt for at markere det
+                </div>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          checked={selectedProducts.length === products.length && products.length > 0}
+                          onChange={() => {
+                            if (selectedProducts.length === products.length) {
+                              setSelectedProducts([]);
+                            } else {
+                              setSelectedProducts(products.map(p => p.id));
+                            }
+                          }}
+                        />
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Produkt
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Kategori
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Pris
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Oprettet
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Visninger
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Handlinger
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {products.map((product) => (
+                      <tr 
+                        key={product.id} 
+                        className={`hover:bg-gray-50 ${selectedProducts.includes(product.id) ? 'bg-blue-50' : ''}`}
+                        onClick={() => toggleSelectProduct(product.id)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            checked={selectedProducts.includes(product.id)}
+                            onChange={() => toggleSelectProduct(product.id)}
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="h-10 w-10 flex-shrink-0">
+                              {product.image_url ? (
+                                <img 
+                                  src={product.image_url} 
+                                  alt={product.title} 
+                                  className="h-10 w-10 rounded-md object-cover"
+                                />
+                              ) : (
+                                <div className="h-10 w-10 rounded-md bg-gray-200 flex items-center justify-center">
+                                  <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {product.title}
+                              </div>
+                              {product.featured && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                  Fremhævet
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{product.category_name}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{formatMoney(product.price)} kr</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(product.status)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{formatDate(new Date(product.created_at))}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {product.views}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFeatureProduct(product.id);
+                            }}
+                            className="text-indigo-600 hover:text-indigo-900 mr-3"
+                          >
+                            {product.featured ? 'Fjern fremhævning' : 'Fremhæv'}
+                          </button>
+                          <Link
+                            href={`/dashboard/products/edit/${product.id}`}
+                            className="text-blue-600 hover:text-blue-900 mr-3"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Rediger
+                          </Link>
+                          <Link
+                            href={`/product/${product.id}`}
+                            className="text-green-600 hover:text-green-900"
+                            target="_blank"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Vis
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+} 

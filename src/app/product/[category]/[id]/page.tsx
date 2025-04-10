@@ -21,10 +21,10 @@ const mockProduct: Product = {
   userId: 'user1',
   user: {
     id: 'user1',
-    firstName: 'Anders',
-    lastName: 'Jensen',
+    first_name: 'Anders',
+    last_name: 'Jensen',
     credits: 0,
-    createdAt: new Date(),
+    created_at: new Date(),
     updatedAt: new Date()
   }
 };

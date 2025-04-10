@@ -43,9 +43,11 @@ export function SubscriptionPackageCard({ pkg, onSelect }: SubscriptionPackageCa
       
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl font-bold">{pkg.name}</CardTitle>
-        <CardDescription className="text-gray-600 mt-2">
-          {pkg.description || ''}
-        </CardDescription>
+        {pkg.description && (
+          <CardDescription className="text-gray-600 mt-2">
+            {pkg.description}
+          </CardDescription>
+        )}
       </CardHeader>
       
       <CardContent>

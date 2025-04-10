@@ -428,7 +428,9 @@ function RelatedProducts({ currentProductId, category }: { currentProductId: str
               {!imageError[product.id] && product.images && product.images.length > 0 ? (
                 <div className="w-full h-full relative">
                   <img
-                    src={product.images[0]}
+                    src={typeof product.images[0] === 'string' 
+                      ? product.images[0] 
+                      : (product.images[0] as { url: string })?.url || '/images/placeholder.jpg'}
                     alt={product.title}
                     className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
                     onError={() => {

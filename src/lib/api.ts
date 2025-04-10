@@ -123,6 +123,8 @@ export async function getProducts(category?: string, limit = 10): Promise<Produc
   }
 }
 
+export const getProductById = getProduct;
+
 export async function getProduct(id: string): Promise<Product | null> {
   const { data: product, error } = await supabase
     .from('products')

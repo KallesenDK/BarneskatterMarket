@@ -1,15 +1,19 @@
 export interface Profile {
   id: string;
+  firstName?: string;
+  lastName?: string;
   first_name?: string;
   last_name?: string;
   address?: string;
+  postalCode?: string;
   postal_code?: string;
   phone?: string;
   banned_until?: Date;
   credits: number;
-  is_admin?: boolean;
-  created_at: Date;
-  updated_at: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export interface Product {
@@ -21,25 +25,17 @@ export interface Product {
   discount_price?: number;
   discountActive?: boolean;
   discount_active?: boolean;
-  images: (string | { url: string })[];
-  image_url?: string | null;
+  images: string[];
   tags: string[];
   category: string;
-  subcategory?: string;
   location?: string;
-  condition?: string;
-  brand?: string;
-  material?: string;
-  dimensions?: string;
-  weight?: string;
-  color?: string;
   createdAt?: Date;
   expiresAt?: Date;
   created_at?: Date;
   expires_at?: Date;
   userId?: string;
   user_id?: string;
-  user?: Partial<Profile>;
+  user?: Profile;
 }
 
 export interface Category {
@@ -62,19 +58,14 @@ export interface Transaction {
   updated_at: Date;
 }
 
-export type User = Profile;
-
 export interface Message {
   id: string;
   sender_id: string;
   receiver_id: string;
+  product_id: string;
   content: string;
-  product_id?: string;
-  created_at: Date;
-  updated_at: Date;
   read: boolean;
-  sender?: Profile;
-  receiver?: Profile;
+  created_at: Date;
 }
 
 export interface CreditPackage {
@@ -85,7 +76,7 @@ export interface CreditPackage {
   active: boolean;
 }
 
-export interface SubscriptionPackage {
+export type SubscriptionPackage = {
   id: string;
   name: string;
   description: string | null;
@@ -93,30 +84,17 @@ export interface SubscriptionPackage {
   product_limit: number;
   price: number;
   is_active: boolean;
-  is_popular: boolean;
-  discount_price: number | null;
-  discount_start_date: string | null;
-  discount_end_date: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
-export interface ProductSlot {
+export type ProductSlot = {
   id: string;
   name: string;
   description: string | null;
-  slots: number;
+  slot_count: number;
   price: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
-}
-
-export interface CartItem {
-  id: string;
-  title: string;
-  price: number;
-  image?: string;
-  quantity?: number;
-  description?: string;
-} 
+}; 

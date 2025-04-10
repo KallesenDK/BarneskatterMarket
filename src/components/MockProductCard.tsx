@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Product, CartItem } from '@/lib/types';
+import { Product } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useEffect, useState, useMemo } from 'react';
@@ -74,12 +74,6 @@ const createSlug = (text: string) => {
     .replace(/-+/g, '-')         // Replace multiple dashes with single dash
     .replace(/^-+/, '')          // Trim dash from start
     .replace(/-+$/, '');         // Trim dash from end
-};
-
-// Hjælpefunktion til at få billedets URL
-const getImageUrl = (image: string | { url: string } | undefined): string | undefined => {
-  if (!image) return undefined;
-  return typeof image === 'string' ? image : image.url;
 };
 
 export default function MockProductCard({ product }: MockProductCardProps) {
@@ -191,20 +185,13 @@ export default function MockProductCard({ product }: MockProductCardProps) {
     e.preventDefault(); // Forebyg at Link trigges
     e.stopPropagation(); // Stop event bubble
     
-    const imageUrl = product.image_url || 
-      (product.images && product.images.length > 0 
-        ? (typeof product.images[0] === 'string' 
-          ? product.images[0] 
-          : product.images[0].url)
-        : undefined);
-
     addItem({
       id: product.id,
       title: product.title,
-      price: (product.discountActive || product.discount_active)
+      price: (product.discountActive || product.discount_active) 
         ? (product.discount_price || product.discountPrice || product.price)
         : product.price,
-      image: imageUrl
+      image: product.image_url || product.images?.[0]
     });
   };
 
@@ -218,12 +205,11 @@ export default function MockProductCard({ product }: MockProductCardProps) {
           {hasProductImages || imageError ? (
             <div className="w-full h-full relative overflow-hidden">
               <div className="absolute inset-0">
-                <Image
-                  src={getImageUrl(product.images?.[0]) || '/images/placeholder.jpg'}
+                <img 
+                  src={currentImageUrl}
                   alt={product.title || 'Produktbillede'}
                   className="object-cover h-full w-full transition-transform duration-500 group-hover:scale-105"
-                  width={500}
-                  height={500}
+                  loading="lazy"
                   onError={handleImageError}
                 />
               </div>

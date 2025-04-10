@@ -153,10 +153,19 @@ export default function EditProductPage() {
   
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (submitting) return;
+    
+    if (!title || !description || !price || !categoryId || !condition || !location) {
+      setError('Udfyld venligst alle påkrævede felter');
+      return;
+    }
+    
+    if (description.length < 50) {
+      setError('Beskrivelsen skal være mindst 50 tegn lang');
+      return;
+    }
     
     setSubmitting(true);
-    setError('');
+    setError(null);
     
     try {
       // Upload nye billeder
@@ -169,7 +178,12 @@ export default function EditProductPage() {
         
         const { error: uploadError } = await supabase.storage
           .from('product-images')
-          .upload(filePath, file);
+          .upload(filePath, file, {
+            onUploadProgress: (progress) => {
+              const percentage = (progress.loaded / progress.total) * 100;
+              setUploadProgress(Math.round(percentage));
+            },
+          });
           
         if (uploadError) throw uploadError;
         
@@ -190,9 +204,6 @@ export default function EditProductPage() {
         if (imageError) throw imageError;
         
         uploadedImageUrls.push({ url: publicUrl });
-        
-        // Opdater upload progress manuelt
-        setUploadProgress(((uploadedImageUrls.length / images.length) * 100));
       }
       
       // Opdater produkt

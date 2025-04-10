@@ -85,31 +85,13 @@ export default function ProductsPage() {
       const validProducts = response.data.map((product: any) => ({
         id: product.id || 'unknown',
         title: product.title || 'Unavailable',
-        description: product.description || '',
         price: product.price || 0,
-        discountPrice: product.discount_price,
-        discount_price: product.discount_price,
-        discountActive: product.discount_active,
-        discount_active: product.discount_active,
-        images: Array.isArray(product.images) ? product.images : [],
-        image_url: product.image_url || null,
-        tags: Array.isArray(product.tags) ? product.tags : [],
+        description: product.description || '',
         category: product.category || 'Andet',
-        subcategory: product.subcategory,
-        location: product.location || '',
-        condition: product.condition,
-        brand: product.brand,
-        material: product.material,
-        dimensions: product.dimensions,
-        weight: product.weight,
-        color: product.color,
-        createdAt: product.created_at,
-        expiresAt: product.expires_at,
-        created_at: product.created_at,
-        expires_at: product.expires_at,
-        userId: product.user_id,
-        user_id: product.user_id,
-        user: product.user || null
+        images: Array.isArray(product.images) ? product.images : [],
+        user: product.user || null,
+        created_at: product.created_at || new Date().toISOString(),
+        location: product.location || ''
       }));
       
       setRawProducts(validProducts);
@@ -144,7 +126,7 @@ export default function ProductsPage() {
       searchQuery,
       priceRange,
       sortOption,
-      true as const // keepIds parameter - bevar id'er
+      true // keepIds parameter - bevar id'er
     );
     
     setFilteredProducts(productsWithFilter);

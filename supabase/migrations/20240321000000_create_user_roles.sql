@@ -52,6 +52,19 @@ ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admins have full access" ON user_roles;
 DROP POLICY IF EXISTS "Users can read own role" ON user_roles;
 
+-- Admins can do everything
+CREATE POLICY "Admins have full access"
+    ON user_roles
+    FOR ALL
+    TO authenticated
+    USING (
+        EXISTS (
+            SELECT 1 FROM user_roles ur
+            WHERE ur.user_id = auth.uid()
+            AND ur.role = 'admin'
+        )
+    );
+
 -- Users can read their own role
 CREATE POLICY "Users can read own role"
     ON user_roles
@@ -59,12 +72,8 @@ CREATE POLICY "Users can read own role"
     TO authenticated
     USING (user_id = auth.uid());
 
--- Only superadmin can manage roles (hardcoded email)
-CREATE POLICY "Superadmin can manage roles"
-    ON user_roles
-    FOR ALL
-    TO authenticated
-    USING (auth.jwt() ->> 'email' = 'kenneth@sigmatic.dk');
+-- Insert your admin user (erstat UUID med din brugers ID)
+-- INSERT INTO user_roles (user_id, role) VALUES ('din-bruger-id-her', 'admin');
 
 -- Drop existing function if it exists
 DROP FUNCTION IF EXISTS public.is_admin();

@@ -6,7 +6,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, CreditCard, Loader2 } from 'lucide-react';
 import { useSupabase } from '@/components/SupabaseProvider';
-import { SubscriptionPackage } from '@/lib/types';
+
+interface SubscriptionPackage {
+  id: string;
+  name: string;
+  description: string;
+  duration_weeks: number;
+  product_limit: number;
+  price: number;
+  is_active: boolean;
+}
 
 export default function CheckoutPage() {
   const searchParams = useSearchParams();

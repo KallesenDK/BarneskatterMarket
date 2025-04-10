@@ -8,16 +8,11 @@ import InterestModal from '@/components/InterestModal';
 import { getProducts } from '@/lib/api';
 
 // Produktgalleri komponent - sikrer at billeder vises korrekt
-function ProductGallery({ images }: { images: (string | { url: string })[] }) {
+function ProductGallery({ images }: { images: string[] }) {
   const [mainImage, setMainImage] = useState(0);
   
   // Tjek om billeder er tomme eller udefinerede
   const hasImages = Array.isArray(images) && images.length > 0;
-  
-  // Hjælpefunktion til at få billedets URL
-  const getImageUrl = (image: string | { url: string }): string => {
-    return typeof image === 'string' ? image : image.url;
-  };
   
   // Håndter fejl ved billedindlæsning
   const handleImageError = (index: number) => {
@@ -33,7 +28,7 @@ function ProductGallery({ images }: { images: (string | { url: string })[] }) {
       <div className="relative aspect-square w-full bg-gray-100 rounded-xl overflow-hidden">
         {hasImages ? (
           <Image
-            src={getImageUrl(images[mainImage])}
+            src={images[mainImage]}
             alt="Produkt hovedbillede"
             fill
             priority
@@ -57,7 +52,7 @@ function ProductGallery({ images }: { images: (string | { url: string })[] }) {
                 ${mainImage === index ? 'ring-2 ring-black opacity-100' : 'ring-1 ring-gray-200 opacity-80 hover:opacity-100'}`}
             >
               <Image
-                src={getImageUrl(image)}
+                src={image}
                 alt={`Produktbillede ${index + 1}`}
                 fill
                 className="object-cover"
@@ -188,11 +183,7 @@ function RelatedProducts({ currentProductId, category }: { currentProductId: str
           <Link href={`/product/${product.id}`} key={product.id} className="group relative">
             <div className="aspect-square w-full overflow-hidden rounded-lg bg-gray-100 group-hover:opacity-90 transition-opacity">
               <Image
-                src={product.images && product.images.length > 0 
-                  ? (typeof product.images[0] === 'string' 
-                    ? product.images[0] 
-                    : product.images[0].url) 
-                  : '/images/placeholder.jpg'}
+                src={product.images && product.images.length > 0 ? product.images[0] : '/images/placeholder.jpg'}
                 alt={product.title}
                 width={300}
                 height={300}

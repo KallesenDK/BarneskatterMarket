@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS profiles (
   phone TEXT,
   banned_until TIMESTAMP,
   credits INTEGER DEFAULT 0,
-  is_admin BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::TEXT, NOW()) NOT NULL
 );
@@ -96,14 +95,11 @@ CREATE TABLE IF NOT EXISTS messages (
 
 -- Opret kredit pakker tabel
 CREATE TABLE IF NOT EXISTS credit_packages (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    credits INTEGER NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  credits INTEGER NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  active BOOLEAN DEFAULT TRUE
 );
 
 -- Opret indeks for hurtigere søgning
@@ -265,25 +261,19 @@ BEGIN
   ) THEN
     CREATE POLICY "Credit packages are viewable by everyone"
       ON credit_packages FOR SELECT
-      USING (true AND is_active = true);
+      USING (true AND active = true);
   END IF;
 END
 $$;
 
--- Tilføj politikker for kredit pakker
-CREATE POLICY "Alle kan se aktive kredit pakker" ON credit_packages
-    FOR SELECT
-    USING (is_active = true);
-
-CREATE POLICY "Kun administratorer kan administrere kredit pakker" ON credit_packages
-    FOR ALL
-    USING (auth.role() = 'authenticated' AND (SELECT is_admin FROM profiles WHERE id = auth.uid()));
-
--- Trigger for at opdatere updated_at
-CREATE TRIGGER set_timestamp
-    BEFORE UPDATE ON credit_packages
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+-- Opret en funktion til at opdatere updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = TIMEZONE('utc'::TEXT, NOW());
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Tilføj triggere til at opdatere updated_at
 CREATE TRIGGER update_profiles_updated_at
@@ -294,13 +284,4 @@ EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_transactions_updated_at
 BEFORE UPDATE ON transactions
 FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
--- Opret en funktion til at opdatere updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = TIMEZONE('utc'::TEXT, NOW());
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql; 
+EXECUTE FUNCTION update_updated_at_column(); 

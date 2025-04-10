@@ -1,17 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Product, Profile } from './types';
-
-interface CleanProduct extends Omit<Product, 'id' | 'user'> {
-  id?: string;
-  user?: Partial<Profile>;
-}
+import { Product } from './types';
 
 /**
  * Hook til at sanitere produkt-data for at fjerne ID'er
  * @param products Produkter der skal saniteres
  * @returns Saniterede produkter uden ID'er og UUID'er
  */
-export function useSanitizedProducts(products: Product[]): Partial<Product>[] {
+export function useSanitizedProducts(products: Product[]): Product[] {
   return useMemo(() => {
     if (!products || products.length === 0) {
       return [];
@@ -24,9 +19,9 @@ export function useSanitizedProducts(products: Product[]): Partial<Product>[] {
       
       // Rens også alle tekstfelter for UUID-mønstre
       Object.keys(cleanedProduct).forEach(key => {
-        const value = cleanedProduct[key as keyof Product];
+        const value = cleanedProduct[key];
         if (typeof value === 'string') {
-          (cleanedProduct as any)[key] = removeUuidPattern(value);
+          cleanedProduct[key] = removeUuidPattern(value);
         }
       });
       
@@ -38,22 +33,20 @@ export function useSanitizedProducts(products: Product[]): Partial<Product>[] {
 /**
  * Hjælpefunktion til at fjerne ID-relaterede data fra et produkt
  */
-export function removeId(product: Product | Partial<Product>): Partial<Product> {
+export function removeId(product: Product): Product {
   if (!product) return product;
   
-  // Lav en kopi af produktet
-  const cleanProduct = { ...product } as Partial<Product>;
+  const cleanProduct = { ...product };
   
-  // Fjern ID-relaterede felter
+  // Slet ID felter fra produkt
   delete cleanProduct.id;
   delete cleanProduct.user_id;
   delete cleanProduct.userId;
   
-  // Håndter user objekt hvis det findes
+  // Fjern også bruger ID hvis det findes
   if (cleanProduct.user) {
-    const cleanUser = { ...cleanProduct.user } as Partial<Profile>;
-    delete cleanUser.id;
-    cleanProduct.user = cleanUser;
+    cleanProduct.user = { ...cleanProduct.user };
+    delete cleanProduct.user.id;
   }
   
   return cleanProduct;
@@ -103,23 +96,23 @@ export function removeUuidPattern(text: string): string {
  * @param keepIds Hvis true, bevares produkt-ID'er (default: false)
  * @returns Filtrerede og sorterede produkter
  */
-export function applyFilters<T extends boolean>(
+export function applyFilters(
   products: Product[], 
   selectedCategory: string, 
   searchQuery: string, 
   priceRange: number[], 
   sortOption: string,
-  keepIds: T
-): T extends true ? Product[] : Partial<Product>[] {
+  keepIds: boolean = false
+): Product[] {
   if (!products || products.length === 0) {
-    return [] as any;
+    return [];
   }
   
-  let result = [...products] as T extends true ? Product[] : Partial<Product>[];
+  let result = [...products];
   
   // Filtrér efter kategori (hvis ikke 'Alle' er valgt)
   if (selectedCategory && selectedCategory !== 'Alle') {
-    result = result.filter(product => product.category === selectedCategory) as T extends true ? Product[] : Partial<Product>[];
+    result = result.filter(product => product.category === selectedCategory);
   }
   
   // Filtrér efter prisområde
@@ -127,10 +120,10 @@ export function applyFilters<T extends boolean>(
     product => {
       const effectivePrice = product.discountActive && product.discount_price 
         ? product.discount_price 
-        : (product.price ?? 0);
-      return (effectivePrice ?? 0) >= (priceRange?.[0] ?? 0) && (effectivePrice ?? 0) <= (priceRange?.[1] ?? Infinity);
+        : product.price;
+      return effectivePrice >= priceRange[0] && effectivePrice <= priceRange[1];
     }
-  ) as T extends true ? Product[] : Partial<Product>[];
+  );
   
   // Filtrér efter søgning
   if (searchQuery) {
@@ -141,35 +134,36 @@ export function applyFilters<T extends boolean>(
         product.description?.toLowerCase().includes(query) ||
         product.category?.toLowerCase().includes(query) ||
         product.location?.toLowerCase().includes(query)
-    ) as T extends true ? Product[] : Partial<Product>[];
+    );
   }
   
   // Sortér produkter
   switch (sortOption) {
     case 'price-low':
       result.sort((a, b) => {
-        const priceA = (a.discountActive && a.discount_price ? a.discount_price : (a.price ?? 0)) ?? 0;
-        const priceB = (b.discountActive && b.discount_price ? b.discount_price : (b.price ?? 0)) ?? 0;
+        const priceA = a.discountActive && a.discount_price ? a.discount_price : a.price;
+        const priceB = b.discountActive && b.discount_price ? b.discount_price : b.price;
         return priceA - priceB;
       });
       break;
     case 'price-high':
       result.sort((a, b) => {
-        const priceA = (a.discountActive && a.discount_price ? a.discount_price : (a.price ?? 0)) ?? 0;
-        const priceB = (b.discountActive && b.discount_price ? b.discount_price : (b.price ?? 0)) ?? 0;
+        const priceA = a.discountActive && a.discount_price ? a.discount_price : a.price;
+        const priceB = b.discountActive && b.discount_price ? b.discount_price : b.price;
         return priceB - priceA;
       });
       break;
     case 'name-asc':
-      result.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+      result.sort((a, b) => a.title.localeCompare(b.title));
       break;
     case 'name-desc':
-      result.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+      result.sort((a, b) => b.title.localeCompare(a.title));
       break;
     case 'latest':
     default:
       result.sort((a, b) => {
-        const getDateValue = (product: Partial<Product>) => {
+        // Håndterer både createdAt og created_at felter
+        const getDateValue = (product: Product) => {
           if (product.createdAt) {
             return new Date(product.createdAt).getTime();
           } else if (product.created_at) {
@@ -191,41 +185,15 @@ export function applyFilters<T extends boolean>(
       
       // Rens også alle strenge der ligner UUID'er
       Object.keys(cleanProduct).forEach(key => {
-        const value = cleanProduct[key as keyof Product];
+        const value = cleanProduct[key];
         if (typeof value === 'string') {
-          (cleanProduct as any)[key] = removeUuidPattern(value);
+          cleanProduct[key] = removeUuidPattern(value);
         }
       });
       
       return cleanProduct;
-    }) as T extends true ? Product[] : Partial<Product>[];
+    });
   }
   
   return result;
-}
-
-export const cleanProductData = (product: Product): CleanProduct => {
-  const cleanProduct = { ...product } as CleanProduct;
-  
-  // Fjern UUID mønstre fra alle string værdier
-  Object.keys(cleanProduct).forEach(key => {
-    const value = (cleanProduct as any)[key];
-    if (typeof value === 'string') {
-      (cleanProduct as any)[key] = removeUuidPattern(value);
-    }
-  });
-
-  // Gør id valgfri
-  if (cleanProduct.id) {
-    delete cleanProduct.id;
-  }
-
-  // Håndter user objekt hvis det findes
-  if (cleanProduct.user) {
-    const cleanUser = { ...cleanProduct.user } as Partial<Profile>;
-    delete cleanUser.id;
-    cleanProduct.user = cleanUser;
-  }
-
-  return cleanProduct;
-}; 
+} 

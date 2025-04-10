@@ -15,7 +15,6 @@ const navLinks = [
   { href: '/products', label: 'Produkter' },
   { href: '/categories', label: 'Kategorier' },
   { href: '/packages', label: 'Pakker' },
-  { href: '/product-slots', label: 'Produktpladser' },
   { href: '/about', label: 'Om os' },
   { href: '/contact', label: 'Kontakt' },
 ]

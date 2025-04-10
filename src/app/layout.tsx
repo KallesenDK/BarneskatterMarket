@@ -6,7 +6,6 @@ import Footer from '@/components/Footer'
 import SupabaseProvider from '@/components/SupabaseProvider'
 import { CartProvider } from '@/components/Cart/CartProvider'
 import DebugLogs from '@/components/DebugLogs'
-import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -31,7 +30,6 @@ export default function RootLayout({
               <Footer />
             </div>
             <DebugLogs />
-            <Toaster position="top-right" richColors />
           </CartProvider>
         </SupabaseProvider>
       </body>

@@ -9,25 +9,12 @@ import { getUserSubscription, getUserProductLimits } from '@/lib/api';
 // Backup cookie der sikrer adgang til dashboard uanset Supabase session
 const DASHBOARD_ACCESS_COOKIE = 'dashboard-access';
 
-interface Subscription {
-  expires_at: string;
-  package?: {
-    name: string;
-  };
-}
-
-interface ProductLimits {
-  productLimit: number;
-  usedProducts: number;
-  availableProducts: number;
-}
-
 export default function DashboardHeader() {
   const pathname = usePathname();
   const [userName, setUserName] = useState('');
   const [daysLeft, setDaysLeft] = useState(0);
   const [packageName, setPackageName] = useState('');
-  const [productLimits, setProductLimits] = useState<ProductLimits>({
+  const [productLimits, setProductLimits] = useState({
     productLimit: 0,
     usedProducts: 0,
     availableProducts: 0
@@ -100,7 +87,7 @@ export default function DashboardHeader() {
 
         // Hent abonnementsinformation
         try {
-          const subscription = await getUserSubscription(user.id) as Subscription;
+          const subscription = await getUserSubscription(user.id);
           
           if (subscription) {
             setHasActivePeriod(true);
@@ -123,7 +110,7 @@ export default function DashboardHeader() {
 
         // Hent produktgrænser
         try {
-          const limits = await getUserProductLimits(user.id) as ProductLimits;
+          const limits = await getUserProductLimits(user.id);
           setProductLimits(limits);
         } catch (limitsError) {
           console.warn('Fejl ved hentning af produktgrænser:', limitsError);

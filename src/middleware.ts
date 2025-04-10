@@ -4,87 +4,79 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   try {
-    // Opret response objekt
-    const res = NextResponse.next();
+    console.log('Middleware kører for path:', request.nextUrl.pathname);
     
-    // Opret Supabase klient med request og response
+    const res = NextResponse.next();
     const supabase = createMiddlewareClient({ req: request, res });
-
-    // Tjek om brugeren er logget ind
-    const {
-      data: { session },
-      error: sessionError
-    } = await supabase.auth.getSession();
-
-    if (sessionError) {
-      console.error('Session fejl i middleware:', sessionError);
-      return NextResponse.redirect(new URL('/auth/signin', request.url));
+    
+    // Hent session
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log('Session status:', session ? 'Logget ind' : 'Ikke logget ind');
+    if (session) {
+      console.log('Bruger email:', session.user.email);
     }
 
-    // Hvis brugeren ikke er logget ind og prøver at tilgå beskyttede ruter
-    if (!session && !request.nextUrl.pathname.startsWith('/auth/')) {
-      return NextResponse.redirect(new URL('/auth/signin', request.url));
-    }
-
-    // Hvis brugeren er logget ind og prøver at tilgå login/signup sider
-    if (session && request.nextUrl.pathname.startsWith('/auth/')) {
-      // Tjek om brugeren er admin
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profileError) {
-        console.error('Profil fejl i middleware:', profileError);
+    // Håndter root dashboard sti
+    if (request.nextUrl.pathname === '/dashboard') {
+      if (!session) {
+        console.log('Ingen session, omdirigerer til login');
         return NextResponse.redirect(new URL('/auth/signin', request.url));
       }
-
-      if (profile?.role === 'admin') {
-        // Hvis admin, redirect til admin dashboard
-        return NextResponse.redirect(new URL('/dashboard/admin', request.url));
-      } else {
-        // Hvis ikke admin, redirect til almindeligt dashboard
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-      }
+      
+      // Omdiriger til korrekt dashboard baseret på rolle
+      const isAdmin = session.user.email === 'kenneth@sigmatic.dk';
+      console.log('Omdirigerer til:', isAdmin ? '/dashboard/admin' : '/dashboard/user');
+      return NextResponse.redirect(new URL(isAdmin ? '/dashboard/admin' : '/dashboard/user', request.url));
     }
 
-    // Hvis ruten starter med /dashboard/admin
+    // Tjek om brugeren prøver at tilgå admin routes
     if (request.nextUrl.pathname.startsWith('/dashboard/admin')) {
       if (!session) {
-        // Hvis ikke logget ind, redirect til login
+        console.log('Ingen session, omdirigerer til login');
         return NextResponse.redirect(new URL('/auth/signin', request.url));
       }
-
-      // Tjek om brugeren er admin
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profileError) {
-        console.error('Profil fejl i middleware:', profileError);
-        return NextResponse.redirect(new URL('/auth/signin', request.url));
-      }
-
-      if (profile?.role !== 'admin') {
-        // Hvis ikke admin, redirect til dashboard
-        return NextResponse.redirect(new URL('/dashboard', request.url));
+      
+      // Tjek om brugeren er admin baseret på email
+      const isAdmin = session.user.email === 'kenneth@sigmatic.dk';
+      if (!isAdmin) {
+        console.log('Ikke admin, omdirigerer til bruger dashboard');
+        return NextResponse.redirect(new URL('/dashboard/user', request.url));
       }
     }
 
-    // Opdater response med session cookie
+    // Tjek om brugeren prøver at tilgå bruger routes
+    if (request.nextUrl.pathname.startsWith('/dashboard/user')) {
+      if (!session) {
+        console.log('Ingen session, omdirigerer til login');
+        return NextResponse.redirect(new URL('/auth/signin', request.url));
+      }
+      
+      // Tjek om brugeren er admin
+      const isAdmin = session.user.email === 'kenneth@sigmatic.dk';
+      if (isAdmin) {
+        console.log('Admin, omdirigerer til admin dashboard');
+        return NextResponse.redirect(new URL('/dashboard/admin', request.url));
+      }
+    }
+
+    // Tjek om brugeren prøver at tilgå auth routes mens de er logget ind
+    if (request.nextUrl.pathname.startsWith('/auth/')) {
+      if (session) {
+        // Hvis logget ind, redirect baseret på rolle
+        const isAdmin = session.user.email === 'kenneth@sigmatic.dk';
+        console.log('Allerede logget ind, omdirigerer til:', isAdmin ? '/dashboard/admin' : '/dashboard/user');
+        return NextResponse.redirect(new URL(isAdmin ? '/dashboard/admin' : '/dashboard/user', request.url));
+      }
+    }
+
     return res;
   } catch (error) {
-    console.error('Uventet fejl i middleware:', error);
-    return NextResponse.redirect(new URL('/auth/signin', request.url));
+    console.error('Middleware fejl:', error);
+    return NextResponse.next();
   }
 }
 
+// Konfigurer middleware til at køre på relevante routes
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/auth/:path*'
-  ],
+  matcher: ['/dashboard', '/dashboard/:path*', '/auth/:path*']
 };

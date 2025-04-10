@@ -191,35 +191,22 @@ export default function MockProductCard({ product }: MockProductCardProps) {
     e.preventDefault(); // Forebyg at Link trigges
     e.stopPropagation(); // Stop event bubble
     
-    addItem({
-      id: product.id,
-      title: product.title,
-      price: 
-        product.discount_price || product.discountPrice || product.price
-        : product.price,
-      image: product.image_url || (product.images?.[0] 
+    const imageUrl = product.image_url || 
+      (product.images && product.images.length > 0 
         ? (typeof product.images[0] === 'string' 
           ? product.images[0] 
           : product.images[0].url)
-        : undefined)
-    });
-  };
+        : undefined);
 
-  const addToCart = () => {
-    const imageUrl = product.image_url || 
-      (product.images && product.images.length > 0 && typeof product.images[0] === 'string' 
-        ? product.images[0] 
-        : product.images?.[0]?.url);
-
-    const cartItem = {
+    addItem({
       id: product.id,
       title: product.title,
-      price: product.price,
+      price: (product.discountActive || product.discount_active)
+        ? (product.discount_price || product.discountPrice || product.price)
+        : product.price,
       image: imageUrl,
-      description: product.description,
-    };
-    
-    addItem(cartItem);
+      description: product.description
+    });
   };
 
   return (

@@ -1,6 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Product } from './types';
 
+interface CleanProduct extends Omit<Product, 'id' | 'user'> {
+  id?: string;
+  user?: {
+    id?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  };
+}
+
 /**
  * Hook til at sanitere produkt-data for at fjerne ID'er
  * @param products Produkter der skal saniteres
@@ -196,4 +206,30 @@ export function applyFilters(
   }
   
   return result;
-} 
+}
+
+export const cleanProductData = (product: Product): CleanProduct => {
+  const cleanProduct = { ...product } as CleanProduct;
+  
+  // Fjern UUID mønstre fra alle string værdier
+  Object.keys(cleanProduct).forEach(key => {
+    const value = (cleanProduct as any)[key];
+    if (typeof value === 'string') {
+      (cleanProduct as any)[key] = removeUuidPattern(value);
+    }
+  });
+
+  // Gør id valgfri
+  if (cleanProduct.id) {
+    delete cleanProduct.id;
+  }
+
+  // Håndter user objekt hvis det findes
+  if (cleanProduct.user) {
+    if (cleanProduct.user.id) {
+      delete cleanProduct.user.id;
+    }
+  }
+
+  return cleanProduct;
+}; 

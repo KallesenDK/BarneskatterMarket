@@ -25,3 +25,12 @@ export function formatDate(date: Date | string, formatStr: string = 'dd/MM/yyyy'
   const dateObj = typeof date === 'string' ? new Date(date) : date
   return format(dateObj, formatStr, { locale: da })
 }
+
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('da-DK', {
+    style: 'currency',
+    currency: 'DKK',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(amount);
+};

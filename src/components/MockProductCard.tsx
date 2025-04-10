@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Product } from '@/lib/types';
+import { Product, CartItem } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useEffect, useState, useMemo } from 'react';
@@ -199,6 +199,23 @@ export default function MockProductCard({ product }: MockProductCardProps) {
         : product.price,
       image: product.image_url || product.images?.[0]
     });
+  };
+
+  const addToCart = () => {
+    const imageUrl = product.image_url || 
+      (product.images && product.images.length > 0 && typeof product.images[0] === 'string' 
+        ? product.images[0] 
+        : product.images?.[0]?.url);
+
+    const cartItem = {
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      image: imageUrl,
+      description: product.description,
+    };
+    
+    addItem(cartItem);
   };
 
   return (

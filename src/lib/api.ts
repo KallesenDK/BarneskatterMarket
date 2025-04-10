@@ -425,50 +425,38 @@ export async function getCreditPackages(): Promise<CreditPackage[]> {
 function transformUserData(data: any): User {
   return {
     id: data.id,
-    firstName: data.first_name,
-    lastName: data.last_name,
-    address: data.address,
-    postalCode: data.postal_code,
-    phone: data.phone,
+    firstName: data.first_name || '',
+    lastName: data.last_name || '',
+    email: data.email || '',
+    address: data.address || '',
+    postalCode: data.postal_code || '',
+    phone: data.phone || '',
     bannedUntil: data.banned_until ? new Date(data.banned_until) : null,
     credits: data.credits,
-    createdAt: new Date(data.created_at),
-    updatedAt: new Date(data.updated_at),
+    createdAt: data.created_at || new Date().toISOString(),
+    updatedAt: data.updated_at || new Date().toISOString(),
   };
 }
 
 function transformProductData(data: any): Product {
-  const product: Product = {
+  const images = data.images || [];
+  const transformedImages = images.map((img: string | { url: string }) => {
+    return typeof img === 'string' ? img : img.url;
+  });
+
+  return {
     id: data.id,
-    title: data.title,
-    description: data.description,
-    price: data.price,
-    discountPrice: data.discount_price,
-    discountActive: data.discount_active,
-    images: data.images,
-    tags: data.tags || [],
-    category: data.category,
-    location: data.location || null,
-    createdAt: new Date(data.created_at),
-    expiresAt: new Date(data.expires_at),
-    userId: data.user_id,
+    title: data.title || '',
+    description: data.description || '',
+    price: data.price || 0,
+    category: data.category || '',
+    condition: data.condition || '',
+    images: transformedImages,
+    userId: data.user_id || '',
+    createdAt: data.created_at || new Date().toISOString(),
+    status: data.status || 'active',
+    user: data.user ? transformUserData(data.user) : null,
   };
-
-  if (data.user) {
-    product.user = {
-      id: data.user.id,
-      firstName: data.user.first_name,
-      lastName: data.user.last_name,
-      address: data.user.address || null,
-      postalCode: data.user.postal_code || null,
-      phone: data.user.phone || null,
-      credits: 0,
-      createdAt: new Date(data.user.created_at),
-      updatedAt: new Date(data.user.updated_at),
-    };
-  }
-
-  return product;
 }
 
 function transformCategoryData(data: any): Category {
@@ -480,39 +468,15 @@ function transformCategoryData(data: any): Category {
 }
 
 function transformMessageData(data: any): Message {
-  const message: Message = {
+  return {
     id: data.id,
-    senderId: data.sender_id,
-    receiverId: data.receiver_id,
-    productId: data.product_id,
-    content: data.content,
-    read: data.read,
-    createdAt: new Date(data.created_at),
+    senderId: data.sender_id || '',
+    receiverId: data.receiver_id || '',
+    productId: data.product_id || '',
+    content: data.content || '',
+    createdAt: data.created_at || new Date().toISOString(),
+    read: data.read || false,
   };
-
-  if (data.sender) {
-    message.sender = {
-      id: data.sender_id,
-      firstName: data.sender.first_name,
-      lastName: data.sender.last_name,
-      credits: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-  }
-
-  if (data.receiver) {
-    message.receiver = {
-      id: data.receiver_id,
-      firstName: data.receiver.first_name,
-      lastName: data.receiver.last_name,
-      credits: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-  }
-
-  return message;
 }
 
 function transformCreditPackageData(data: any): CreditPackage {
@@ -526,40 +490,67 @@ function transformCreditPackageData(data: any): CreditPackage {
 }
 
 // Profil API
-export async function getProfile(userId: string): Promise<Profile | null> {
+export const getProfile = async (userId: string): Promise<Profile | null> => {
   try {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single()
-    
-    if (error) throw error
-    
-    return data as Profile
-  } catch (error) {
-    console.error('Fejl ved hentning af profil:', error)
-    return null
-  }
-}
+      .single();
 
-export async function updateProfile(userId: string, profileData: Partial<Profile>) {
+    if (error) throw error;
+    if (!data) return null;
+
+    return {
+      id: data.id as string,
+      firstName: data.first_name as string | undefined,
+      lastName: data.last_name as string | undefined,
+      address: data.address as string | undefined,
+      postalCode: data.postal_code as string | undefined,
+      phone: data.phone as string | undefined,
+      banned_until: data.banned_until ? new Date(data.banned_until as string) : undefined,
+      credits: (data.credits as number) || 0,
+      created_at: data.created_at ? new Date(data.created_at as string) : undefined,
+      updated_at: data.updated_at ? new Date(data.updated_at as string) : undefined
+    };
+  } catch (error) {
+    console.error('Fejl ved hentning af profil:', error);
+    return null;
+  }
+};
+
+export const updateProfile = async (userId: string, data: Partial<Profile>): Promise<Profile | null> => {
   try {
-    const { data, error } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
-      .update(profileData)
+      .update({
+        ...data,
+        banned_until: data.banned_until ? new Date(data.banned_until).toISOString() : null
+      })
       .eq('id', userId)
       .select()
-      .single()
-    
-    if (error) throw error
-    
-    return data as Profile
+      .single();
+
+    if (error) throw error;
+    if (!profile) return null;
+
+    return {
+      id: profile.id as string,
+      firstName: profile.first_name as string | undefined,
+      lastName: profile.last_name as string | undefined,
+      address: profile.address as string | undefined,
+      postalCode: profile.postal_code as string | undefined,
+      phone: profile.phone as string | undefined,
+      banned_until: profile.banned_until ? new Date(profile.banned_until as string) : undefined,
+      credits: (profile.credits as number) || 0,
+      created_at: profile.created_at ? new Date(profile.created_at as string) : undefined,
+      updated_at: profile.updated_at ? new Date(profile.updated_at as string) : undefined
+    };
   } catch (error) {
-    console.error('Fejl ved opdatering af profil:', error)
-    return null
+    console.error('Fejl ved opdatering af profil:', error);
+    return null;
   }
-}
+};
 
 export async function createProfile(userId: string, profileData: Partial<Profile>) {
   try {
@@ -812,4 +803,105 @@ export async function getUserProductLimits(userId: string) {
       availableProducts: 0
     };
   }
-} 
+}
+
+export async function getProductImages(product: Product): Promise<string[]> {
+  const allImages: string[] = [];
+  
+  // Håndter eksisterende billeder
+  if (product.images) {
+    product.images.forEach(img => {
+      if (typeof img === 'string') {
+        allImages.push(img);
+      } else if (img && typeof img === 'object' && 'url' in img) {
+        allImages.push(img.url);
+      }
+    });
+  }
+  
+  // Hent billeder fra storage hvis nødvendigt
+  if (allImages.length === 0) {
+    try {
+      const { data: storageData } = await supabase.storage
+        .from('product-images')
+        .list(`${product.userId}/${product.id}`);
+        
+      if (storageData) {
+        const storageUrls = storageData
+          .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
+          .map(file => `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${product.userId}/${product.id}/${file.name}`);
+          
+        allImages.push(...storageUrls);
+      }
+    } catch (error) {
+      console.error('Fejl ved hentning af billeder fra storage:', error);
+    }
+  }
+  
+  return allImages;
+}
+
+export const createMessage = async (messageData: {
+  sender_id: string;
+  receiver_id: string;
+  product_id: string;
+  content: string;
+}): Promise<Message> => {
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        sender_id: messageData.sender_id,
+        receiver_id: messageData.receiver_id,
+        product_id: messageData.product_id,
+        content: messageData.content,
+        read: false
+      })
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    if (!data) throw new Error('Ingen data returneret ved oprettelse af besked');
+
+    return {
+      id: data.id as string,
+      sender_id: data.sender_id as string,
+      receiver_id: data.receiver_id as string,
+      product_id: data.product_id as string,
+      content: data.content as string,
+      read: data.read as boolean,
+      created_at: new Date(data.created_at as string)
+    };
+  } catch (error) {
+    console.error('Fejl ved oprettelse af besked:', error);
+    throw error;
+  }
+};
+
+export const getMessage = async (messageId: string): Promise<Message | null> => {
+  try {
+    const { data: message, error } = await supabase
+      .from('messages')
+      .select(`
+        *,
+        sender:sender_id(id, first_name, last_name),
+        receiver:receiver_id(id, first_name, last_name)
+      `)
+      .eq('id', messageId)
+      .single();
+
+    if (error) throw error;
+    if (!message) return null;
+
+    return {
+      ...message,
+      sender_id: message.sender_id,
+      receiver_id: message.receiver_id,
+      sender: message.sender,
+      receiver: message.receiver
+    } as Message;
+  } catch (error) {
+    console.error('Fejl ved hentning af besked:', error);
+    return null;
+  }
+}; 

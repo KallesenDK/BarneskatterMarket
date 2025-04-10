@@ -1,5 +1,5 @@
 import { ProductSlot } from "@/lib/types";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from '@/lib/supabase/client';
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,6 @@ import { formatCurrency } from "@/lib/utils";
 export default function ProductSlotList() {
   const [slots, setSlots] = useState<ProductSlot[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     async function fetchSlots() {

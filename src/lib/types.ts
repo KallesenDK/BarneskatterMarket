@@ -66,6 +66,8 @@ export interface Transaction {
   updated_at: Date;
 }
 
+export type User = Profile;
+
 export interface Message {
   id: string;
   sender_id: string;
@@ -74,6 +76,8 @@ export interface Message {
   content: string;
   read: boolean;
   created_at: Date;
+  sender?: Profile;
+  receiver?: Profile;
 }
 
 export interface CreditPackage {
@@ -109,4 +113,12 @@ export interface ProductSlot {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface CartItem {
+  id: string;
+  title: string;
+  price: number;
+  image?: string;
+  quantity: number;
 } 

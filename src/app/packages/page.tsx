@@ -7,28 +7,13 @@ import { SubscriptionPackageCard } from '@/components/SubscriptionPackageCard'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
+import { SubscriptionPackage } from '@/lib/types'
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.6 }
 };
-
-interface SubscriptionPackage {
-  id: string
-  name: string
-  description: string
-  duration_weeks: number
-  product_limit: number
-  price: number
-  is_active: boolean
-  is_popular: boolean
-  discount_price: number | null
-  discount_start_date: string | null
-  discount_end_date: string | null
-  created_at: string
-  updated_at: string
-}
 
 interface GridSettings {
   sm: number;

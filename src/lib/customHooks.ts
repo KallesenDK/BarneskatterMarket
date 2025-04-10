@@ -29,9 +29,9 @@ export function useSanitizedProducts(products: Product[]): Product[] {
       
       // Rens også alle tekstfelter for UUID-mønstre
       Object.keys(cleanedProduct).forEach(key => {
-        const value = cleanedProduct[key];
+        const value = cleanedProduct[key as keyof Product];
         if (typeof value === 'string') {
-          cleanedProduct[key] = removeUuidPattern(value);
+          (cleanedProduct as any)[key] = removeUuidPattern(value);
         }
       });
       
@@ -195,7 +195,7 @@ export function applyFilters(
       
       // Rens også alle strenge der ligner UUID'er
       Object.keys(cleanProduct).forEach(key => {
-        const value = cleanProduct[key];
+        const value = cleanProduct[key as keyof Product];
         if (typeof value === 'string') {
           cleanProduct[key] = removeUuidPattern(value);
         }

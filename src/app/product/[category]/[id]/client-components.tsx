@@ -10,7 +10,7 @@ import InterestModal from '@/components/InterestModal';
 import { getProducts } from '@/lib/api';
 
 // Moderne produktgalleri komponent med zoom effekt
-function ModernProductGallery({ images }: { images: string[] }) {
+function ModernProductGallery({ images }: { images: (string | { url: string })[] }) {
   const [mainImage, setMainImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [imageError, setImageError] = useState<Record<number, boolean>>({});
@@ -35,9 +35,17 @@ function ModernProductGallery({ images }: { images: string[] }) {
     }
   };
 
+  // Konverter billeder til strenge
+  const getImageUrl = (image: string | { url: string }): string => {
+    return typeof image === 'string' ? image : image.url;
+  };
+
   // Sikre at alle billeder har en gyldig URL
   const safeImages = hasImages 
-    ? images.filter(img => typeof img === 'string' && img.trim() !== '')
+    ? images.filter(img => {
+        const url = getImageUrl(img);
+        return typeof url === 'string' && url.trim() !== '';
+      })
     : [];
   
   useEffect(() => {
@@ -73,7 +81,7 @@ function ModernProductGallery({ images }: { images: string[] }) {
           {!imageError[mainImage] ? (
             <div className="relative h-full w-full">
               <img
-                src={safeImages[mainImage]}
+                src={getImageUrl(safeImages[mainImage])}
                 alt="Produkt hovedbillede"
                 className={`w-full h-full object-contain transition-transform duration-500 ${isZoomed ? 'scale-110' : 'scale-100'}`}
                 onError={(e) => {
@@ -102,7 +110,7 @@ function ModernProductGallery({ images }: { images: string[] }) {
             {!imageError[0] ? (
               <div className="relative h-full w-full">
                 <img
-                  src={safeImages[0]}
+                  src={getImageUrl(safeImages[0])}
                   alt="Produktbillede 1"
                   className="object-contain w-full h-full"
                   onError={(e) => {
@@ -136,7 +144,7 @@ function ModernProductGallery({ images }: { images: string[] }) {
         {!imageError[mainImage] ? (
           <div className="relative h-full w-full">
             <img
-              src={safeImages[mainImage]}
+              src={getImageUrl(safeImages[mainImage])}
               alt="Produkt hovedbillede"
               className={`w-full h-full object-contain transition-transform duration-500 ${isZoomed ? 'scale-110' : 'scale-100'}`}
               onError={(e) => {
@@ -175,7 +183,7 @@ function ModernProductGallery({ images }: { images: string[] }) {
             {!imageError[index] ? (
               <div className="relative h-full w-full">
                 <img
-                  src={image}
+                  src={getImageUrl(image)}
                   alt={`Produktbillede ${index + 1}`}
                   className="object-cover w-full h-full"
                   onError={(e) => {

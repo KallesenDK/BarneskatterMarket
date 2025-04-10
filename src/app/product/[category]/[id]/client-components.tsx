@@ -248,8 +248,8 @@ function ModernProductDetails({ product, urlCategory }: { product: Product, urlC
     }
     
     // Ellers tjek om der er adresse eller postnummer på bruger
-    if (product.user?.postalCode) {
-      return `${product.user.postalCode.slice(0, 4)}`;
+    if (product.user?.postal_code) {
+      return `${product.user.postal_code.slice(0, 4)}`;
     }
     
     return 'Lokalitet ikke angivet';

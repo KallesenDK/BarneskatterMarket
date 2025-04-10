@@ -38,7 +38,7 @@ export function useSanitizedProducts(products: Product[]): Partial<Product>[] {
 /**
  * Hjælpefunktion til at fjerne ID-relaterede data fra et produkt
  */
-export function removeId(product: Product): Partial<Product> {
+export function removeId(product: Product | Partial<Product>): Partial<Product> {
   if (!product) return product;
   
   // Lav en kopi af produktet

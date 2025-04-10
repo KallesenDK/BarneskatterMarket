@@ -204,11 +204,15 @@ function ModernProductDetails({ product, urlCategory }: { product: Product, urlC
   const isInCart = items.some(item => item.id === product.id);
 
   const handleAddToCart = () => {
+    const firstImage = product.images?.[0];
+    const imageUrl = product.image_url || 
+      (typeof firstImage === 'string' ? firstImage : firstImage?.url);
+
     addItem({
       id: product.id,
       title: product.title,
       price: product.discountActive ? (product.discount_price || product.discountPrice || product.price) : product.price,
-      image: product.image_url || product.images?.[0]
+      image: imageUrl
     });
   };
 

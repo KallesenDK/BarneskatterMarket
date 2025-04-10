@@ -46,17 +46,17 @@ export function useSanitizedProducts(products: Product[]): Partial<Product>[] {
 export function removeId(product: Product): Partial<Product> {
   if (!product) return product;
   
-  const {
-    id,
-    user_id,
-    userId,
-    user,
-    ...cleanProduct
-  } = product;
-
+  // Lav en kopi af produktet
+  const cleanProduct = { ...product } as Partial<Product>;
+  
+  // Fjern ID-relaterede felter
+  delete cleanProduct.id;
+  delete cleanProduct.user_id;
+  delete cleanProduct.userId;
+  
   // Håndter user objekt hvis det findes
-  if (user) {
-    const { id: userId, ...cleanUser } = user;
+  if (cleanProduct.user) {
+    const { id: _, ...cleanUser } = cleanProduct.user;
     cleanProduct.user = cleanUser;
   }
   

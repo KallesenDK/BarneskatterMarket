@@ -1,14 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Product } from './types';
+import { Product, Profile } from './types';
 
 interface CleanProduct extends Omit<Product, 'id' | 'user'> {
   id?: string;
-  user?: {
-    id?: string;
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-  };
+  user?: Partial<Profile>;
 }
 
 /**
@@ -56,7 +51,8 @@ export function removeId(product: Product): Partial<Product> {
   
   // Håndter user objekt hvis det findes
   if (cleanProduct.user) {
-    const { id: _, ...cleanUser } = cleanProduct.user;
+    const cleanUser = { ...cleanProduct.user } as Partial<Profile>;
+    delete cleanUser.id;
     cleanProduct.user = cleanUser;
   }
   

@@ -615,7 +615,17 @@ export default function ProductClientComponents({
     <div className="max-w-6xl mx-auto px-4">
       <div className="lg:grid lg:grid-cols-2 lg:gap-x-12">
         {/* Produktbilleder */}
-        <ModernProductGallery images={product.images as (string | { url: string })[] || []} />
+        <ModernProductGallery 
+          images={Array.isArray(product.images) 
+            ? product.images.map(img => 
+                typeof img === 'string' 
+                  ? img 
+                  : typeof img === 'object' && img !== null && 'url' in img 
+                    ? img 
+                    : ''
+              ).filter(Boolean)
+            : []} 
+        />
         
         {/* Produktinformation */}
         <ModernProductDetails product={product} urlCategory={urlCategory} />

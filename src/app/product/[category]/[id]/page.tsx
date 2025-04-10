@@ -25,7 +25,7 @@ const mockProduct: Product = {
     last_name: 'Jensen',
     credits: 0,
     created_at: new Date(),
-    updatedAt: new Date()
+    updated_at: new Date()
   }
 };
 

@@ -22,6 +22,12 @@ interface SubscriptionPackage {
   product_limit: number
   price: number
   is_active: boolean
+  is_popular: boolean
+  discount_price: number | null
+  discount_start_date: string | null
+  discount_end_date: string | null
+  created_at: string
+  updated_at: string
 }
 
 interface GridSettings {

@@ -110,7 +110,7 @@ export function applyFilters(
   priceRange: number[], 
   sortOption: string,
   keepIds: boolean = false
-): Product[] {
+): Product[] | Partial<Product>[] {
   if (!products || products.length === 0) {
     return [];
   }
@@ -194,12 +194,12 @@ export function applyFilters(
       Object.keys(cleanProduct).forEach(key => {
         const value = cleanProduct[key as keyof Product];
         if (typeof value === 'string') {
-          cleanProduct[key] = removeUuidPattern(value);
+          (cleanProduct as any)[key] = removeUuidPattern(value);
         }
       });
       
       return cleanProduct;
-    });
+    }) as Partial<Product>[];
   }
   
   return result;
@@ -223,9 +223,9 @@ export const cleanProductData = (product: Product): CleanProduct => {
 
   // Håndter user objekt hvis det findes
   if (cleanProduct.user) {
-    if (cleanProduct.user.id) {
-      delete cleanProduct.user.id;
-    }
+    const cleanUser = { ...cleanProduct.user } as Partial<Profile>;
+    delete cleanUser.id;
+    cleanProduct.user = cleanUser;
   }
 
   return cleanProduct;

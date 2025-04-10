@@ -5,13 +5,37 @@ import { getSupabaseClient } from '@/lib/supabase';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+interface ProductImage {
+  url: string;
+  display_order: number;
+}
+
+interface User {
+  id: string;
+  first_name: string;
+  last_name: string;
+  address: string;
+  postal_code: string;
+}
+
+interface Product {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  created_at: string;
+  user_id: string;
+  images?: string[];
+  user?: User;
+}
+
 export async function GET() {
   try {
     console.log('API: Henter produkter fra databasen...');
     const supabase = getSupabaseClient();
     
     // 1. Hent produkter fra Supabase med brugeroplysninger
-    const { data: products, error } = await supabase
+    const { data: productsData, error } = await supabase
       .from('products')
       .select(`
         *,
@@ -29,6 +53,8 @@ export async function GET() {
       console.error('Supabase fejl ved hentning af produkter:', error);
       return NextResponse.json({ message: 'Fejl ved hentning af produkter' }, { status: 500 });
     }
+
+    const products = productsData as unknown as Product[];
     
     console.log(`API: Fandt ${products.length} produkter, henter nu billeder...`);
     
@@ -52,7 +78,7 @@ export async function GET() {
         }
         
         // Tilføj billeder til produktet som et array af URLs
-        const imageUrls = imageData?.map(img => img.url) || [];
+        const imageUrls = (imageData as ProductImage[])?.map(img => img.url) || [];
         
         // Behold eventuelle eksisterende billeder og tilføj dem fra product_images
         const allImages = [

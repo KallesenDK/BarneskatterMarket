@@ -144,7 +144,7 @@ export default function ProductsPage() {
       searchQuery,
       priceRange,
       sortOption,
-      true // keepIds parameter - bevar id'er
+      true as const // keepIds parameter - bevar id'er
     );
     
     setFilteredProducts(productsWithFilter);

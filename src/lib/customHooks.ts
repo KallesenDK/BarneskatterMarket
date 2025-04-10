@@ -103,16 +103,16 @@ export function removeUuidPattern(text: string): string {
  * @param keepIds Hvis true, bevares produkt-ID'er (default: false)
  * @returns Filtrerede og sorterede produkter
  */
-export function applyFilters(
+export function applyFilters<T extends boolean>(
   products: Product[], 
   selectedCategory: string, 
   searchQuery: string, 
   priceRange: number[], 
   sortOption: string,
-  keepIds: boolean = false
-): Product[] | Partial<Product>[] {
+  keepIds: T
+): T extends true ? Product[] : Partial<Product>[] {
   if (!products || products.length === 0) {
-    return [];
+    return [] as any;
   }
   
   let result = [...products];
@@ -202,7 +202,7 @@ export function applyFilters(
     }) as Partial<Product>[];
   }
   
-  return result;
+  return result as any;
 }
 
 export const cleanProductData = (product: Product): CleanProduct => {

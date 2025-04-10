@@ -76,6 +76,12 @@ const createSlug = (text: string) => {
     .replace(/-+$/, '');         // Trim dash from end
 };
 
+// Hjælpefunktion til at få billedets URL
+const getImageUrl = (image: string | { url: string } | undefined): string | undefined => {
+  if (!image) return undefined;
+  return typeof image === 'string' ? image : image.url;
+};
+
 export default function MockProductCard({ product }: MockProductCardProps) {
   const { addItem, items } = useCart();
   const [imageError, setImageError] = useState(false);
@@ -205,11 +211,12 @@ export default function MockProductCard({ product }: MockProductCardProps) {
           {hasProductImages || imageError ? (
             <div className="w-full h-full relative overflow-hidden">
               <div className="absolute inset-0">
-                <img 
-                  src={currentImageUrl}
+                <Image
+                  src={getImageUrl(product.images?.[0]) || '/images/placeholder.jpg'}
                   alt={product.title || 'Produktbillede'}
                   className="object-cover h-full w-full transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
+                  width={500}
+                  height={500}
                   onError={handleImageError}
                 />
               </div>

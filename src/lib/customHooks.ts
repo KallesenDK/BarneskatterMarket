@@ -115,11 +115,11 @@ export function applyFilters<T extends boolean>(
     return [] as any;
   }
   
-  let result = [...products];
+  let result = [...products] as T extends true ? Product[] : Partial<Product>[];
   
   // Filtrér efter kategori (hvis ikke 'Alle' er valgt)
   if (selectedCategory && selectedCategory !== 'Alle') {
-    result = result.filter(product => product.category === selectedCategory);
+    result = result.filter(product => product.category === selectedCategory) as T extends true ? Product[] : Partial<Product>[];
   }
   
   // Filtrér efter prisområde
@@ -130,7 +130,7 @@ export function applyFilters<T extends boolean>(
         : product.price;
       return effectivePrice >= priceRange[0] && effectivePrice <= priceRange[1];
     }
-  );
+  ) as T extends true ? Product[] : Partial<Product>[];
   
   // Filtrér efter søgning
   if (searchQuery) {
@@ -141,7 +141,7 @@ export function applyFilters<T extends boolean>(
         product.description?.toLowerCase().includes(query) ||
         product.category?.toLowerCase().includes(query) ||
         product.location?.toLowerCase().includes(query)
-    );
+    ) as T extends true ? Product[] : Partial<Product>[];
   }
   
   // Sortér produkter
@@ -161,16 +161,15 @@ export function applyFilters<T extends boolean>(
       });
       break;
     case 'name-asc':
-      result.sort((a, b) => a.title.localeCompare(b.title));
+      result.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
       break;
     case 'name-desc':
-      result.sort((a, b) => b.title.localeCompare(a.title));
+      result.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
       break;
     case 'latest':
     default:
       result.sort((a, b) => {
-        // Håndterer både createdAt og created_at felter
-        const getDateValue = (product: Product) => {
+        const getDateValue = (product: Partial<Product>) => {
           if (product.createdAt) {
             return new Date(product.createdAt).getTime();
           } else if (product.created_at) {
@@ -199,10 +198,10 @@ export function applyFilters<T extends boolean>(
       });
       
       return cleanProduct;
-    }) as Partial<Product>[];
+    }) as T extends true ? Product[] : Partial<Product>[];
   }
   
-  return result as any;
+  return result;
 }
 
 export const cleanProductData = (product: Product): CleanProduct => {

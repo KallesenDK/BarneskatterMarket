@@ -12,8 +12,8 @@ import { SubscriptionPackage } from '@/lib/types'
 import { motion } from 'framer-motion'
 
 interface SubscriptionPackageCardProps {
-  pkg: SubscriptionPackage
-  onSelect: (pkg: SubscriptionPackage) => void
+  pkg: SubscriptionPackage;
+  onSelect: (pkg: SubscriptionPackage) => void;
 }
 
 export function SubscriptionPackageCard({ pkg, onSelect }: SubscriptionPackageCardProps) {
@@ -22,10 +22,10 @@ export function SubscriptionPackageCard({ pkg, onSelect }: SubscriptionPackageCa
     pkg.discount_start_date && 
     pkg.discount_end_date &&
     new Date(pkg.discount_start_date) <= new Date() &&
-    new Date(pkg.discount_end_date) >= new Date()
+    new Date(pkg.discount_end_date) >= new Date();
 
-  const displayPrice = hasActiveDiscount ? pkg.discount_price! : pkg.price
-  const savings = hasActiveDiscount ? Math.round((1 - pkg.discount_price! / pkg.price) * 100) : 0
+  const displayPrice = hasActiveDiscount ? pkg.discount_price! : pkg.price;
+  const savings = hasActiveDiscount && pkg.discount_price ? Math.round((1 - pkg.discount_price / pkg.price) * 100) : 0;
 
   return (
     <Card className={`relative overflow-hidden transition-all duration-300 hover:scale-105 ${
@@ -44,7 +44,7 @@ export function SubscriptionPackageCard({ pkg, onSelect }: SubscriptionPackageCa
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl font-bold">{pkg.name}</CardTitle>
         <CardDescription className="text-gray-600 mt-2">
-          {pkg.description}
+          {pkg.description || ''}
         </CardDescription>
       </CardHeader>
       

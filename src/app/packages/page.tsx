@@ -70,6 +70,7 @@ export default function PackagesPage() {
   }, [supabase]);
 
   const handleSelectPackage = (pkg: SubscriptionPackage) => {
+    if (!pkg || !pkg.id) return;
     router.push(`/checkout?package=${pkg.id}`);
   };
 

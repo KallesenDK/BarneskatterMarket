@@ -510,7 +510,9 @@ function RelatedProducts({ currentProductId, category, urlCategory }: { currentP
                 {!imageError[relatedProduct.id || ''] && relatedProduct.images && relatedProduct.images.length > 0 ? (
                   <div className="w-full h-full relative">
                     <img
-                      src={relatedProduct.images[0]}
+                      src={typeof relatedProduct.images[0] === 'string' 
+                        ? relatedProduct.images[0] 
+                        : (relatedProduct.images[0] as { url: string }).url}
                       alt={relatedProduct.title || 'Relateret produkt'}
                       className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
                       onError={() => {

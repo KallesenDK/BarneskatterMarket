@@ -15,6 +15,13 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    turboDrive: true,
+  },
+  distDir: '.next',
+  generateBuildId: async () => {
+    return 'build-' + Date.now()
+  },
 }
 
 module.exports = nextConfig 

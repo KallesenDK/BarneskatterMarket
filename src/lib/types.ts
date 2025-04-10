@@ -39,7 +39,7 @@ export interface Product {
   expires_at?: Date;
   userId?: string;
   user_id?: string;
-  user?: Profile;
+  user?: Partial<Profile>;
 }
 
 export interface Category {

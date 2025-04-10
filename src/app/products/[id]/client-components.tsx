@@ -8,11 +8,16 @@ import InterestModal from '@/components/InterestModal';
 import { getProducts } from '@/lib/api';
 
 // Produktgalleri komponent - sikrer at billeder vises korrekt
-function ProductGallery({ images }: { images: string[] }) {
+function ProductGallery({ images }: { images: (string | { url: string })[] }) {
   const [mainImage, setMainImage] = useState(0);
   
   // Tjek om billeder er tomme eller udefinerede
   const hasImages = Array.isArray(images) && images.length > 0;
+  
+  // Hjælpefunktion til at få billedets URL
+  const getImageUrl = (image: string | { url: string }): string => {
+    return typeof image === 'string' ? image : image.url;
+  };
   
   // Håndter fejl ved billedindlæsning
   const handleImageError = (index: number) => {
@@ -28,7 +33,7 @@ function ProductGallery({ images }: { images: string[] }) {
       <div className="relative aspect-square w-full bg-gray-100 rounded-xl overflow-hidden">
         {hasImages ? (
           <Image
-            src={images[mainImage]}
+            src={getImageUrl(images[mainImage])}
             alt="Produkt hovedbillede"
             fill
             priority
@@ -52,7 +57,7 @@ function ProductGallery({ images }: { images: string[] }) {
                 ${mainImage === index ? 'ring-2 ring-black opacity-100' : 'ring-1 ring-gray-200 opacity-80 hover:opacity-100'}`}
             >
               <Image
-                src={image}
+                src={getImageUrl(image)}
                 alt={`Produktbillede ${index + 1}`}
                 fill
                 className="object-cover"

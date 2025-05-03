@@ -265,10 +265,6 @@ export default function UsersPage() {
 
   if (!confirm('Er du sikker på, at du vil slette denne bruger?')) return;
 
-  try {
-    const { error } = await supabase
-      .from('profiles')
-      .delete()
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">

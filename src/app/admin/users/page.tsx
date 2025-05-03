@@ -23,15 +23,15 @@ interface User {
   created_at: string;
   role: string;
   profile: {
-    first_name: string;
-    last_name: string;
-    address: string;
-    postal_code: string;
-    phone: string;
-    banned_until: string | null;
-    credits: number;
-    avatar_url: string | null;
-    subscription_end_date: string | null;
+    first_name?: string | null;
+    last_name?: string | null;
+    address?: string | null;
+    postal_code?: string | null;
+    phone?: string | null;
+    banned_until?: string | null;
+    credits?: number | null;
+    avatar_url?: string | null;
+    subscription_end_date?: string | null;
   };
 }
 
@@ -138,17 +138,19 @@ export default function UsersPage() {
             created_at: user.created_at,
             role: user.role,
             profile: {
-              first_name: user.first_name,
-              last_name: user.last_name,
-              address: user.address,
-              postal_code: user.postal_code,
-              phone: user.phone,
-              banned_until: user.banned_until,
-              credits: user.credits,
-              avatar_url: user.avatar_url,
-              subscription_end_date: user.subscription_end_date,
+              first_name: user.first_name ?? '',
+              last_name: user.last_name ?? '',
+              address: user.address ?? '',
+              postal_code: user.postal_code ?? '',
+              phone: user.phone ?? '',
+              banned_until: user.banned_until ?? null,
+              credits: user.credits ?? 0,
+              avatar_url: user.avatar_url ?? null,
+              subscription_end_date: user.subscription_end_date ?? null,
             },
           }));
+      } else {
+        console.error('Supabase users-data er ikke et array:', users);
       }
       setUsers(transformedUsers);
     } catch (error) {
@@ -467,19 +469,19 @@ export default function UsersPage() {
                   {user.email}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.profile.first_name} {user.profile.last_name}
+                  {(user.profile.first_name || '') + ' ' + (user.profile.last_name || '')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.profile.address}, {user.profile.postal_code}
+                  {(user.profile.address || '') + (user.profile.postal_code ? ', ' + user.profile.postal_code : '')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.profile.phone}
+                  {user.profile.phone || ''}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {user.role === 'admin' ? 'Administrator' : 'Bruger'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {user.profile.credits}
+                  {user.profile.credits ?? 0}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {format(new Date(user.created_at), 'PPP', { locale: da })}

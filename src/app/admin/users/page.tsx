@@ -201,6 +201,11 @@ export default function UsersPage() {
     }
   };
 
+  // Ban bruger
+  const handleBanUser = async () => {
+    if (!selectedUser) return;
+  };
+
   // Opdater bruger
   const handleUpdateUser = async () => {
     if (!selectedUser) return;
@@ -256,46 +261,37 @@ export default function UsersPage() {
     }
   };
 
-  // Ban bruger
-  const handleBanUser = async () => {
-    if (!selectedUser) return;
 
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        address: formData.address,
+        postal_code: formData.postal_code,
+        phone: formData.phone,
+        role: formData.role,
+      })
+      .eq('id', selectedUser.id);
 
-      const { error } = await supabase
-        .from('user_bans')
-        .insert({
-          user_id: selectedUser.id,
-          banned_by: user.id,
-          reason: banData.reason,
-          start_date: banData.start_date,
-          end_date: banData.end_date,
-        });
+    if (error) throw error;
 
-      if (error) throw error;
-
-      setIsBanOpen(false);
-      setSelectedUser(null);
-      setBanData({
-        reason: '',
-        start_date: '',
-        end_date: '',
-      });
-      setFormData({
-        email: '',
-        password: '',
-        role: 'user',
-        first_name: '',
-        last_name: '',
-        address: '',
-        postal_code: '',
-        phone: '',
-      });
-    } catch (error) {
-      console.error('Fejl ved ban af bruger:', error);
-    }
+    fetchUsers();
+    setIsOpen(false);
+    setSelectedUser(null);
+    setFormData({
+      email: '',
+      password: '',
+      role: 'user',
+      first_name: '',
+      last_name: '',
+      address: '',
+      postal_code: '',
+      phone: '',
+    });
+  } catch (error) {
+    console.error('Fejl ved opdatering af bruger:', error);
   }
 };
 
@@ -307,64 +303,6 @@ const handleDeleteUser = async (userId: string) => {
     const { error } = await supabase
       .from('profiles')
       .delete()
-      .eq('id', userId);
-
-    if (error) throw error;
-
-    fetchUsers();
-  } catch (error) {
-    console.error('Fejl ved sletning af bruger:', error);
-  }
-};
-
-// Ban bruger
-  // Ban bruger
-  const handleBanUser = async () => {
-    if (!selectedUser) return;
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { error } = await supabase
-        .from('user_bans')
-        .insert({
-          user_id: selectedUser.id,
-          banned_by: user.id,
-          reason: banData.reason,
-          start_date: banData.start_date,
-          end_date: banData.end_date,
-        });
-
-      if (error) throw error;
-
-      setIsBanOpen(false);
-      setSelectedUser(null);
-      setSelectedUser(user);
-      const today = new Date();
-      const oneWeek = new Date(today);
-      oneWeek.setDate(today.getDate() + 7);
-      
-      setBanData({
-        reason: '',
-        start_date: today.toISOString(),
-        end_date: oneWeek.toISOString(),
-      });
-      setIsBanOpen(true);
-    } catch (error) {
-      console.error('Fejl ved ban af bruger:', error);
-    }
-  };
-
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1AA49A]"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">

@@ -129,28 +129,26 @@ export default function UsersPage() {
       // Transform data to match our User interface
       let transformedUsers: User[] = [];
 
-      if (Array.isArray(users)) {
-        transformedUsers = users
-          .filter(isValidUser)
-          .map(user => ({
-            id: user.id,
-            email: user.email,
-            created_at: user.created_at,
-            role: user.role,
-            profile: {
-              first_name: user.first_name ?? '',
-              last_name: user.last_name ?? '',
-              address: user.address ?? '',
-              postal_code: user.postal_code ?? '',
-              phone: user.phone ?? '',
-              banned_until: user.banned_until ?? null,
-              credits: user.credits ?? 0,
-              avatar_url: user.avatar_url ?? null,
-              subscription_end_date: user.subscription_end_date ?? null,
-            },
-          }));
+      if (Array.isArray(users) && users.every(isValidUser)) {
+        transformedUsers = users.map(user => ({
+          id: user.id,
+          email: user.email,
+          created_at: user.created_at,
+          role: user.role,
+          profile: {
+            first_name: user.first_name ?? '',
+            last_name: user.last_name ?? '',
+            address: user.address ?? '',
+            postal_code: user.postal_code ?? '',
+            phone: user.phone ?? '',
+            banned_until: user.banned_until ?? null,
+            credits: user.credits ?? 0,
+            avatar_url: user.avatar_url ?? null,
+            subscription_end_date: user.subscription_end_date ?? null,
+          },
+        }));
       } else {
-        console.error('Supabase users-data er ikke et array:', users);
+        console.error('Supabase users-data er ikke et gyldigt bruger-array:', users);
       }
       setUsers(transformedUsers);
     } catch (error) {

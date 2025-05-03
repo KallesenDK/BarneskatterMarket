@@ -351,6 +351,7 @@ const handleBanUser = async () => {
     });
     setIsBanOpen(true);
   }
+};
 
 
   if (loading) {

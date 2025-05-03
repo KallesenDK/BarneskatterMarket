@@ -262,41 +262,7 @@ export default function UsersPage() {
   };
 
 
-  try {
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        address: formData.address,
-        postal_code: formData.postal_code,
-        phone: formData.phone,
-        role: formData.role,
-      })
-      .eq('id', selectedUser.id);
 
-    if (error) throw error;
-
-    fetchUsers();
-    setIsOpen(false);
-    setSelectedUser(null);
-    setFormData({
-      email: '',
-      password: '',
-      role: 'user',
-      first_name: '',
-      last_name: '',
-      address: '',
-      postal_code: '',
-      phone: '',
-    });
-  } catch (error) {
-    console.error('Fejl ved opdatering af bruger:', error);
-  }
-};
-
-// Slet bruger
-const handleDeleteUser = async (userId: string) => {
   if (!confirm('Er du sikker på, at du vil slette denne bruger?')) return;
 
   try {

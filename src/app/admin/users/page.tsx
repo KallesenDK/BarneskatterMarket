@@ -116,11 +116,7 @@ export default function UsersPage() {
           avatar_url,
           subscription_end_date,
           role,
-          auth_users:auth.users!inner (
-            id,
-            email,
-            created_at
-          )
+          auth_users(id, email, created_at)
         `)
         .order('created_at', { ascending: false });
 
@@ -132,8 +128,8 @@ export default function UsersPage() {
       if (Array.isArray(users) && users.every(isValidUser)) {
         transformedUsers = users.map(user => ({
           id: user.id,
-          email: user.email,
-          created_at: user.created_at,
+          email: user.auth_users?.[0]?.email ?? '',
+          created_at: user.auth_users?.[0]?.created_at ?? '',
           role: user.role,
           profile: {
             first_name: user.first_name ?? '',

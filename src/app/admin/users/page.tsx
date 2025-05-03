@@ -50,6 +50,21 @@ function isValidUser(user: any): user is { id: string; email: string } {
 }
 
 export default function UsersPage() {
+  // Funktion til at håndtere redigering af bruger
+  function handleEdit(user: User) {
+    setSelectedUser(user);
+    setIsOpen(true);
+    setFormData({
+      email: user.email || '',
+      password: '',
+      role: user.role || 'user',
+      first_name: user.profile.first_name || '',
+      last_name: user.profile.last_name || '',
+      address: user.profile.address || '',
+      postal_code: user.profile.postal_code || '',
+      phone: user.profile.phone || '',
+    });
+  }
   const { supabase } = useSupabase();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);

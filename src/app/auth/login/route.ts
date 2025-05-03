@@ -1,7 +1,3 @@
-import { NextResponse } from 'next/server'
-import { type NextRequest } from 'next/server'
-
-export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url)
-  return NextResponse.redirect(`${requestUrl.origin}/auth/signin`)
-} 
+// The file has been intentionally left blank to avoid Next.js conflict, 
+// allowing only the login page (page.tsx) to handle /auth/login. 
+// This ensures that you can still log in via the UI.

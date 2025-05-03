@@ -15,6 +15,7 @@ export default function UserDashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      let extraSlots = 0;
       if (user) {
         // Hent profil
         const { data: profileData } = await supabase
@@ -43,10 +44,21 @@ export default function UserDashboardPage() {
           planData = data;
         }
 
+        // Hent ekstra produktpladser fra user_product_slots
+        const { data: userSlotsData } = await supabase
+          .from('user_product_slots')
+          .select('slots')
+          .eq('user_id', user.id);
+        if (userSlotsData && Array.isArray(userSlotsData)) {
+          extraSlots = userSlotsData.reduce((sum, row) => sum + (row.slots || 0), 0);
+        }
+
         setSubscription({
           ...subscriptionData,
           plan: planData,
+          extraSlots,
         });
+
 
         // Hent produkter
         const { data: productsData } = await supabase
@@ -72,16 +84,51 @@ export default function UserDashboardPage() {
           <div>
             <h2 className="text-xl font-semibold mb-4">Velkommen, {profile?.first_name}</h2>
             <div className="space-y-2">
+
               <p className="text-gray-600">
                 Din pakke er: <span className="font-medium text-[#BC1964]">{subscription?.plan?.name || 'Ingen aktiv pakke'}</span>
               </p>
-              <p className="text-gray-600">
-                Du har <span className="font-medium text-[#1AA49A]">{subscription?.plan?.available_slots ?? 0}</span> ledige produktpladser ud af <span className="font-medium text-[#BC1964]">{subscription?.plan?.total_slots ?? 0}</span> i alt
-              </p>
-              <p className="text-gray-600">
-                {/* Her kan du evt. beregne dage tilbage baseret på starts_at/slutter_at */}
-                Du har <span className="font-medium text-[#1AA49A]">{/* Beregn dage tilbage her */}</span> dage tilbage af dit abonnement
-              </p>
+              {
+                // Beregn produktpladser
+                (() => {
+                  const baseSlots = subscription?.plan?.product_limit ?? 0;
+                  const extraSlots = subscription?.extraSlots ?? 0;
+                  const totalSlots = baseSlots + extraSlots;
+                  const usedSlots = products.length;
+                  const availableSlots = Math.max(totalSlots - usedSlots, 0);
+                  return (
+                    <p className="text-gray-600">
+                      Du har <span className="font-medium text-[#1AA49A]">{availableSlots}</span> ledige produktpladser ud af <span className="font-medium text-[#BC1964]">{totalSlots}</span> i alt
+                    </p>
+                  );
+                })()
+              }
+              {
+                // Beregn dage tilbage
+                (() => {
+                  let daysRemaining = 0;
+                  if (subscription?.starts_at) {
+                    const start = new Date(subscription.starts_at);
+                    let end: Date | null = null;
+                    if (subscription.ends_at) {
+                      end = new Date(subscription.ends_at);
+                    } else if (subscription?.plan?.duration_days) {
+                      end = new Date(start.getTime() + subscription.plan.duration_days * 24 * 60 * 60 * 1000);
+                    } else {
+                      end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000); // fallback 30 dage
+                    }
+                    const now = new Date();
+                    if (end > now) {
+                      daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                    }
+                  }
+                  return (
+                    <p className="text-gray-600">
+                      Du har <span className="font-medium text-[#1AA49A]">{daysRemaining}</span> dage tilbage af dit abonnement
+                    </p>
+                  );
+                })()
+              }
             </div>
           </div>
           <div className="flex gap-4">

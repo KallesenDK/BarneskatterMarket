@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
+  LayoutDashboard,
   Users, 
   Package, 
   Grid, 
@@ -15,7 +16,7 @@ import {
 } from 'lucide-react';
 
 const navigation = [
-  { name: 'Dashboard', href: '/admin', icon: Grid },
+  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Brugere', href: '/admin/users', icon: Users },
   { name: 'Pakker', href: '/admin/packages', icon: Package },
   { name: 'Produkt Pladser', href: '/admin/product-slots', icon: Grid },
@@ -105,8 +106,8 @@ export default function AdminLayout({
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
-        <main className="py-6 px-4 sm:px-6 lg:px-8">
+      <div className="flex-1">
+        <main className="p-0">
           {children}
         </main>
       </div>

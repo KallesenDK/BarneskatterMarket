@@ -6,6 +6,7 @@ import Footer from '@/components/Footer'
 import SupabaseProvider from '@/components/SupabaseProvider'
 import { CartProvider } from '@/components/Cart/CartProvider'
 import DebugLogs from '@/components/DebugLogs'
+import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -29,6 +30,7 @@ export default function RootLayout({
               <main className="flex-grow">{children}</main>
               <Footer />
             </div>
+            <Toaster />
             <DebugLogs />
           </CartProvider>
         </SupabaseProvider>

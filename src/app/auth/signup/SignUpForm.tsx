@@ -50,99 +50,61 @@ export default function SignUpForm() {
     setIsLoading(true)
     
     try {
-      console.log('Starter brugeroprettelse med følgende data:', { 
-        email: formData.email, 
-        firstName: formData.firstName, 
-        lastName: formData.lastName 
-      })
-      
-      let isSuccess = false
-      
-      try {
-        // Forsøg først med normal Supabase Auth
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: {
-              first_name: formData.firstName,
-              last_name: formData.lastName,
-            },
-            emailRedirectTo: `${window.location.origin}/auth/callback`
-          }
-        })
-        
-        if (signUpError) {
-          console.error('Supabase auth.signUp fejl:', signUpError)
-        
-          if (signUpError.message?.includes('saving new user')) {
-            console.log('Database fejl ved brugeroprettelse, prøver alternativ metode')
-            throw signUpError // Går til fallback metoden
-          } else {
-            throw signUpError // Anden fejl, kast den videre
-          }
+      // Opret auth bruger
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`
         }
-        
-        console.log('Bruger oprettet i auth:', data)
-        isSuccess = true
-        
-      } catch (signUpErr: any) {
-        console.log('Falder tilbage til API metoden efter fejl:', signUpErr.message)
-        
-        if (signUpErr.message?.includes('saving new user')) {
-          // Prøv med vores API-endpoint som fallback
-          const response = await fetch('/api/auth/signup', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              email: formData.email,
-              password: formData.password,
-              firstName: formData.firstName,
-              lastName: formData.lastName
-            })
-          })
-          
-          if (!response.ok) {
-            const errorData = await response.json()
-            throw new Error(errorData.error || 'Fejl i API-kald')
-          }
-          
-          const result = await response.json()
-          console.log('Bruger oprettet via API:', result)
-          isSuccess = true
-        } else {
-          // Kast fejlen videre
-          throw signUpErr
+      });
+
+      if (signUpError) throw signUpError;
+
+      if (authData.user) {
+        // Opret profil med email
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authData.user.id,
+            email: formData.email,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            role: 'user',
+            created_at: new Date().toISOString(),
+            credits: 0
+          });
+
+        if (profileError) {
+          console.error('Fejl ved oprettelse af profil:', profileError);
+          // Hvis profil oprettelsen fejler, prøv at slette auth brugeren
+          await supabase.auth.admin.deleteUser(authData.user.id);
+          throw profileError;
         }
-      }
-      
-      // Hvis en af metoderne lykkedes
-      if (isSuccess) {
+
         // Omdirigér til bekræftelses-siden
-        router.push('/auth/verify-email')
+        router.push('/auth/verify-email');
       }
+    } catch (error: any) {
+      console.error('Fejl ved oprettelse af bruger:', error);
       
-    } catch (err: any) {
-      console.error('Fejl ved oprettelse af bruger:', err)
-      
-      // Mere informativ fejlmeddelelse baseret på fejlkoden
-      if (err.message?.includes('duplicate key') || err.message?.includes('already been registered')) {
-        setError('Der findes allerede en bruger med denne email')
-      } else if (err.message?.includes('invalid email')) {
-        setError('Den angivne email er ikke gyldig')
-      } else if (err.message?.includes('password')) {
-        setError('Adgangskoden er for svag. Brug mindst 6 tegn med både bogstaver og tal')
-      } else if (err.message?.includes('saving new user')) {
-        setError('Der opstod en fejl ved oprettelse af brugerprofilen. Prøv igen.')
+      if (error.message?.includes('duplicate key') || error.message?.includes('already been registered')) {
+        setError('Der findes allerede en bruger med denne email');
+      } else if (error.message?.includes('invalid email')) {
+        setError('Den angivne email er ikke gyldig');
+      } else if (error.message?.includes('password')) {
+        setError('Adgangskoden er for svag. Brug mindst 6 tegn med både bogstaver og tal');
       } else {
-        setError(err.message || 'Der opstod en fejl ved oprettelse af kontoen')
+        setError(error.message || 'Der skete en fejl ved oprettelse af kontoen');
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

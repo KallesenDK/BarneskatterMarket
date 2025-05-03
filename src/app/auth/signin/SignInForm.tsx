@@ -29,47 +29,44 @@ export default function SignInForm() {
     setIsLoading(true)
     
     try {
-      console.log('Forsøger at logge ind...')
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       })
       
       if (signInError) {
-        console.error('Login fejl:', signInError)
         throw signInError
       }
 
-      console.log('Login succesfuld:', data)
-      
-      // Vent på at sessionen er gemt
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Verificer at sessionen er gemt
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      if (sessionError) {
-        console.error('Session fejl:', sessionError)
-        throw sessionError
-      }
-      
-      if (!session) {
+      if (!data.session) {
         throw new Error('Ingen session fundet efter login')
       }
-      
-      console.log('Session verificeret:', session.user.email)
-      
-      // Simpel omdirigering baseret på email
-      const isAdmin = formData.email.toLowerCase() === 'kenneth@sigmatic.dk'
-      const redirectPath = isAdmin ? '/dashboard/admin' : '/dashboard/user'
-      
-      console.log('Omdirigerer til:', redirectPath)
-      
-      // Brug window.location for fuld side genindlæsning
-      window.location.href = redirectPath
+
+      // Hent brugerens profil for at tjekke rolle
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.session.user.id)
+        .single()
+
+      console.log('DEBUG: Hentet profil:', profile)
+      if (profileError) {
+        console.error('DEBUG: Fejl ved profilopslag:', profileError)
+        throw profileError
+      }
+      if (!profile || !profile.role) {
+        setError('Din brugerprofil blev ikke fundet, eller rolle mangler. Kontakt support hvis problemet fortsætter.')
+        setIsLoading(false)
+        return
+      }
+      const redirectPath = profile.role === 'admin' ? '/dashboard/admin' : '/dashboard/user'
+      console.log('DEBUG: Redirect path:', redirectPath)
+      router.push(redirectPath)
       
     } catch (err: any) {
       console.error('Login fejl:', err)
       setError(err.message || 'Der skete en fejl under login')
+    } finally {
       setIsLoading(false)
     }
   }

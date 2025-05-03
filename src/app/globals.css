@@ -2,15 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Skjul UUID'er og ID'er */
-[class*="f2803689"],
-[id*="f2803689"],
-[data-uuid],
-[class*="-uuid-"] {
-  display: none !important;
-}
-
 @layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
   :root {
     --radius: 0.5rem;
     
@@ -188,8 +185,6 @@
   padding-bottom: 15px;
   position: relative;
 }
-
-
 
 @layer base {
   * {

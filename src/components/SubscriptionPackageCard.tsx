@@ -1,3 +1,6 @@
+'use client'
+
+import { useRouter } from 'next/navigation'
 import { Check } from 'lucide-react'
 import {
   Card,
@@ -9,7 +12,7 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-export interface SubscriptionPackage {
+interface SubscriptionPackage {
   id: string
   name: string
   description: string
@@ -17,24 +20,52 @@ export interface SubscriptionPackage {
   product_limit: number
   price: number
   is_active: boolean
+  is_popular?: boolean
+  discount_price?: number | null
+  discount_start_date?: string | null
+  discount_end_date?: string | null
 }
 
 interface SubscriptionPackageCardProps {
-  pkg: SubscriptionPackage
-  onSelect: (pkg: SubscriptionPackage) => void
+  package: SubscriptionPackage
 }
 
-export function SubscriptionPackageCard({ pkg, onSelect }: SubscriptionPackageCardProps) {
-  const isPopular = pkg.name === 'Basic'
+export function SubscriptionPackageCard({ package: pkg }: SubscriptionPackageCardProps) {
+  const router = useRouter()
+
+  const isDiscountActive = pkg.discount_price != null && 
+    pkg.discount_start_date != null && 
+    pkg.discount_end_date != null && 
+    new Date(pkg.discount_start_date) <= new Date() && 
+    new Date() <= new Date(pkg.discount_end_date)
+
+  const calculateDiscount = () => {
+    if (!isDiscountActive || !pkg.discount_price) return 0
+    return Math.round(((pkg.price - pkg.discount_price) / pkg.price) * 100)
+  }
+
+  const handleSelect = () => {
+    router.push(`/checkout?package=${pkg.id}`)
+  }
+
+  const discountPercentage = calculateDiscount()
 
   return (
     <Card className={`relative overflow-hidden transition-all duration-300 hover:scale-105 ${
-      isPopular ? 'border-[#1AA49A] shadow-lg' : 'hover:shadow-lg'
+      pkg.is_popular ? 'border-[#1AA49A] shadow-lg' : 'hover:shadow-lg'
     }`}>
-      {isPopular && (
+      {pkg.is_popular && (
         <div className="absolute top-0 right-0">
           <div className="bg-[#1AA49A] text-white px-3 py-1 rounded-bl-lg text-sm font-medium">
             Mest populær
+          </div>
+        </div>
+      )}
+      
+      {isDiscountActive && discountPercentage > 0 && (
+        <div className="absolute top-0 left-0">
+          <div className="bg-[#F08319] text-white px-3 py-1 rounded-br-lg text-sm font-medium">
+            Spar {discountPercentage}%
           </div>
         </div>
       )}
@@ -48,9 +79,25 @@ export function SubscriptionPackageCard({ pkg, onSelect }: SubscriptionPackageCa
       
       <CardContent>
         <div className="mb-6">
-          <p className="text-3xl font-bold">
-            {pkg.price.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
-          </p>
+          {isDiscountActive ? (
+            <>
+              <div className="flex items-center gap-2">
+                <p className="text-3xl font-bold text-[#F08319]">
+                  {pkg.discount_price?.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
+                </p>
+                <p className="text-lg text-gray-500 line-through">
+                  {pkg.price.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
+                </p>
+              </div>
+              <p className="text-sm text-[#F08319]">
+                Tilbud slutter {new Date(pkg.discount_end_date!).toLocaleDateString('da-DK')}
+              </p>
+            </>
+          ) : (
+            <p className="text-3xl font-bold">
+              {pkg.price.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
+            </p>
+          )}
           <p className="text-sm text-gray-500">per {pkg.duration_weeks} uger</p>
         </div>
 
@@ -77,7 +124,7 @@ export function SubscriptionPackageCard({ pkg, onSelect }: SubscriptionPackageCa
       <CardFooter>
         <Button 
           className="w-full bg-gradient-to-r from-[#1AA49A] to-[#158C84] hover:from-[#158C84] hover:to-[#1AA49A] text-white transition-all duration-300"
-          onClick={() => onSelect(pkg)}
+          onClick={handleSelect}
         >
           Køb pakke
         </Button>

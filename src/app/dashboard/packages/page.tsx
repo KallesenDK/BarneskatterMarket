@@ -23,6 +23,10 @@ interface SubscriptionPackage {
   product_limit: number
   price: number
   is_active: boolean
+  is_popular: boolean
+  discount_price: number | null
+  discount_start_date: string | null
+  discount_end_date: string | null
   created_at: string
   updated_at: string
 }
@@ -39,7 +43,11 @@ export default function PackagesPage() {
     duration_weeks: '',
     product_limit: '',
     price: '',
-    is_active: true
+    is_active: true,
+    is_popular: false,
+    discount_price: '',
+    discount_start_date: '',
+    discount_end_date: ''
   })
 
   // Hent pakker
@@ -75,6 +83,10 @@ export default function PackagesPage() {
         product_limit: parseInt(formData.product_limit),
         price: parseFloat(formData.price),
         is_active: formData.is_active,
+        is_popular: formData.is_popular,
+        discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
+        discount_start_date: formData.discount_start_date || null,
+        discount_end_date: formData.discount_end_date || null,
         updated_at: new Date().toISOString()
       }
 
@@ -86,6 +98,17 @@ export default function PackagesPage() {
           .eq('id', editingPackage.id)
 
         if (error) throw error
+
+        // Hvis denne pakke er sat som populær, fjern populær status fra andre pakker
+        if (packageData.is_popular) {
+          await supabase
+            .from('subscription_packages')
+            .update({ is_popular: false })
+            .neq('id', editingPackage.id)
+        }
+
+        // Revalider /packages siden
+        await fetch('/packages', { method: 'GET', cache: 'reload' });
       } else {
         // Opret ny pakke
         const { error } = await supabase
@@ -93,6 +116,17 @@ export default function PackagesPage() {
           .insert([packageData])
 
         if (error) throw error
+
+        // Hvis denne pakke er sat som populær, fjern populær status fra andre pakker
+        if (packageData.is_popular) {
+          await supabase
+            .from('subscription_packages')
+            .update({ is_popular: false })
+            .neq('id', editingPackage?.id)
+        }
+
+        // Revalider /packages siden
+        await fetch('/packages', { method: 'GET', cache: 'reload' });
       }
 
       // Nulstil form og hent opdaterede pakker
@@ -102,7 +136,11 @@ export default function PackagesPage() {
         duration_weeks: '',
         product_limit: '',
         price: '',
-        is_active: true
+        is_active: true,
+        is_popular: false,
+        discount_price: '',
+        discount_start_date: '',
+        discount_end_date: ''
       })
       setEditingPackage(null)
       setIsOpen(false)
@@ -138,7 +176,11 @@ export default function PackagesPage() {
       duration_weeks: pkg.duration_weeks.toString(),
       product_limit: pkg.product_limit.toString(),
       price: pkg.price.toString(),
-      is_active: pkg.is_active
+      is_active: pkg.is_active,
+      is_popular: pkg.is_popular,
+      discount_price: pkg.discount_price?.toString() || '',
+      discount_start_date: pkg.discount_start_date || '',
+      discount_end_date: pkg.discount_end_date || ''
     })
     setIsOpen(true)
   }
@@ -170,7 +212,11 @@ export default function PackagesPage() {
                   duration_weeks: '',
                   product_limit: '',
                   price: '',
-                  is_active: true
+                  is_active: true,
+                  is_popular: false,
+                  discount_price: '',
+                  discount_start_date: '',
+                  discount_end_date: ''
                 })
               }}
             >
@@ -178,34 +224,33 @@ export default function PackagesPage() {
               Opret Pakke
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>
                 {editingPackage ? 'Rediger Pakke' : 'Opret Ny Pakke'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Navn</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="F.eks. Basic, Pro, Business"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="description">Beskrivelse</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Beskriv pakkens fordele"
-                  required
-                />
-              </div>
               <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label htmlFor="name">Navn</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="F.eks. Basic, Pro, Business"
+                    required
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="description">Beskrivelse</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Beskriv pakkens fordele..."
+                  />
+                </div>
                 <div>
                   <Label htmlFor="duration_weeks">Varighed (uger)</Label>
                   <Input
@@ -214,52 +259,88 @@ export default function PackagesPage() {
                     min="1"
                     value={formData.duration_weeks}
                     onChange={(e) => setFormData(prev => ({ ...prev, duration_weeks: e.target.value }))}
-                    placeholder="2"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="product_limit">Produkt grænse</Label>
+                  <Label htmlFor="product_limit">Antal produkter</Label>
                   <Input
                     id="product_limit"
                     type="number"
                     min="1"
                     value={formData.product_limit}
                     onChange={(e) => setFormData(prev => ({ ...prev, product_limit: e.target.value }))}
-                    placeholder="4"
                     required
                   />
                 </div>
+                <div>
+                  <Label htmlFor="price">Normal pris (DKK)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="discount_price">Tilbudspris (DKK)</Label>
+                  <Input
+                    id="discount_price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.discount_price}
+                    onChange={(e) => setFormData(prev => ({ ...prev, discount_price: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="discount_start_date">Tilbud start dato</Label>
+                  <Input
+                    id="discount_start_date"
+                    type="datetime-local"
+                    value={formData.discount_start_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, discount_start_date: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="discount_end_date">Tilbud slut dato</Label>
+                  <Input
+                    id="discount_end_date"
+                    type="datetime-local"
+                    value={formData.discount_end_date}
+                    onChange={(e) => setFormData(prev => ({ ...prev, discount_end_date: e.target.value }))}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="is_active"
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
+                    className="h-4 w-4 rounded border-gray-300 text-[#1AA49A] focus:ring-[#1AA49A]"
+                  />
+                  <Label htmlFor="is_active">Aktiv</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="is_popular"
+                    checked={formData.is_popular}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_popular: e.target.checked }))}
+                    className="h-4 w-4 rounded border-gray-300 text-[#1AA49A] focus:ring-[#1AA49A]"
+                  />
+                  <Label htmlFor="is_popular">Mest populær</Label>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="price">Pris (DKK)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                  placeholder="49.00"
-                  required
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
-                  className="h-4 w-4 rounded border-gray-300 text-[#1AA49A] focus:ring-[#1AA49A]"
-                />
-                <Label htmlFor="is_active">Aktiv pakke</Label>
-              </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
                   Annuller
                 </Button>
                 <Button type="submit">
-                  {editingPackage ? 'Gem Ændringer' : 'Opret Pakke'}
+                  {editingPackage ? 'Gem ændringer' : 'Opret pakke'}
                 </Button>
               </div>
             </form>
@@ -267,42 +348,54 @@ export default function PackagesPage() {
         </Dialog>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                  Navn
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                  Beskrivelse
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                  Varighed
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                  Produkter
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                  Pris
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                  Handlinger
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {packages.map((pkg) => (
-                <tr key={pkg.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {pkg.name}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {pkg.description}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Navn
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Varighed
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Produkter
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Pris
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tilbud
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th scope="col" className="relative px-6 py-3">
+                <span className="sr-only">Handlinger</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {packages.map((pkg) => {
+              const isDiscountActive = pkg.discount_price && 
+                pkg.discount_start_date && 
+                pkg.discount_end_date && 
+                new Date(pkg.discount_start_date) <= new Date() && 
+                new Date(pkg.discount_end_date) >= new Date()
+
+              return (
+                <tr key={pkg.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="text-sm font-medium text-gray-900">
+                        {pkg.name}
+                        {pkg.is_popular && (
+                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#1AA49A] text-white">
+                            Mest populær
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {pkg.duration_weeks} uger
@@ -310,24 +403,46 @@ export default function PackagesPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {pkg.product_limit} produkter
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div className="flex flex-col">
+                      {isDiscountActive ? (
+                        <>
+                          <span className="line-through text-gray-500">{pkg.price.toFixed(2)} kr.</span>
+                          <span className="text-[#F08319] font-semibold">{pkg.discount_price?.toFixed(2)} kr.</span>
+                        </>
+                      ) : (
+                        <span>{pkg.price.toFixed(2)} kr.</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {pkg.price.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
+                    {isDiscountActive ? (
+                      <span className="text-[#F08319]">
+                        Aktiv til {new Date(pkg.discount_end_date!).toLocaleDateString('da-DK')}
+                      </span>
+                    ) : pkg.discount_price ? (
+                      <span className="text-gray-500">
+                        Starter {new Date(pkg.discount_start_date!).toLocaleDateString('da-DK')}
+                      </span>
+                    ) : (
+                      <span>-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      pkg.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      pkg.is_active 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
                     }`}>
                       {pkg.is_active ? 'Aktiv' : 'Inaktiv'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEdit(pkg)}
-                      className="mr-2"
+                      className="text-[#1AA49A] hover:text-[#1AA49A]/80"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -335,23 +450,16 @@ export default function PackagesPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(pkg.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-600 hover:text-red-800"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </td>
                 </tr>
-              ))}
-              {packages.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
-                    Ingen pakker fundet. Opret din første pakke ved at klikke på "Opret Pakke" knappen.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   )

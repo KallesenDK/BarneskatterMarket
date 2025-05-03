@@ -1,184 +1,89 @@
-'use client';
+import { getGridSettings } from '@/lib/grid-settings'
+import { createClient } from '@/lib/supabase/server'
+import { ProductSlotCard } from '@/components/ProductSlotCard'
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+interface ProductSlot {
+  id: string;
+  name: string;
+  description: string | null;
+  slot_count: number;
+  price: number;
+  is_active: boolean;
+  is_popular: boolean;
+  discount_price: number | null;
+  discount_start_date: string | null;
+  discount_end_date: string | null;
+}
 
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
-};
+export const dynamic = 'force-dynamic'
 
-const productSlots = [
-  {
-    id: '1',
-    name: '5 Ekstra pladser',
-    price: 199,
-    slots: 5,
-    description: 'Perfekt til dig der har brug for lidt ekstra plads'
-  },
-  {
-    id: '2',
-    name: '10 Ekstra pladser',
-    price: 349,
-    slots: 10,
-    description: 'Mest populære valg for aktive sælgere',
-    isPopular: true
-  },
-  {
-    id: '3',
-    name: '20 Ekstra pladser',
-    price: 599,
-    slots: 20,
-    description: 'Ideel til store sælgere med mange produkter'
-  },
-  {
-    id: '4',
-    name: '50 Ekstra pladser',
-    price: 1299,
-    slots: 50,
-    description: 'Til professionelle sælgere med stort sortiment'
-  }
-];
+export default async function ProductSlotsPage() {
+  try {
+    const supabase = createClient()
+    console.log('Supabase client created')
+    
+    const gridSettings = await getGridSettings('credit_packages_grid')
+    console.log('Grid settings:', gridSettings)
 
-export default function ProductSlotsPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
+    const { data: slots, error } = await supabase
+      .from('product_slots')
+      .select('*')
+      .eq('is_active', true)
+      .order('price')
 
-  useEffect(() => {
-    // Simuler loading
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+    if (error) {
+      console.error('Error fetching slots:', error)
+      return (
+        <div className="container mx-auto py-8 px-4">
+          <h1 className="text-2xl font-bold mb-6">Ekstra Produktpladser</h1>
+          <p className="text-red-500">Der opstod en fejl ved hentning af produktpladser: {error.message}</p>
+          <pre className="mt-4 p-4 bg-gray-100 rounded">
+            {JSON.stringify(error, null, 2)}
+          </pre>
+        </div>
+      )
+    }
 
-    return () => clearTimeout(timer);
-  }, []);
+    console.log('Slots data:', slots)
 
-  const handleSelectSlots = (slotId: string) => {
-    router.push(`/checkout?product-slots=${slotId}`);
-  };
+    if (!slots || slots.length === 0) {
+      return (
+        <div className="container mx-auto py-8 px-4">
+          <h1 className="text-2xl font-bold mb-6">Ekstra Produktpladser</h1>
+          <p>Der er ingen tilgængelige produktpladser i øjeblikket.</p>
+        </div>
+      )
+    }
 
-  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="relative bg-[#1AA49A] overflow-hidden">
-          <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1AA49A]/90 to-[#158C84]/90" />
-            <div className="absolute inset-0 bg-grid-white/[0.1] bg-[length:16px_16px]" />
-          </div>
-          <div className="relative max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <div className="h-8 w-48 bg-white/20 rounded animate-pulse mx-auto" />
-              <div className="h-6 w-64 bg-white/20 rounded animate-pulse mx-auto mt-4" />
-            </div>
-          </div>
-          <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-gray-50" />
-        </div>
-        <div className="max-w-7xl mx-auto px-4 -mt-8 relative z-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-96 bg-white rounded-2xl animate-pulse shadow-lg" />
+      <main 
+        className="min-h-screen bg-gray-50"
+        style={{
+          '--grid-cols-sm': gridSettings.sm,
+          '--grid-cols-md': gridSettings.md,
+          '--grid-cols-lg': gridSettings.lg,
+        } as any}
+      >
+        <div className="container mx-auto py-8 px-4">
+          <h1 className="text-2xl font-bold mb-6">Ekstra Produktpladser</h1>
+          <div className="grid gap-6 grid-cols-[repeat(var(--grid-cols-sm),1fr)] md:grid-cols-[repeat(var(--grid-cols-md),1fr)] lg:grid-cols-[repeat(var(--grid-cols-lg),1fr)]">
+            {slots.map((slot) => (
+              <ProductSlotCard key={slot.id} slot={slot} />
             ))}
           </div>
         </div>
+      </main>
+    )
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <h1 className="text-2xl font-bold mb-6">Ekstra Produktpladser</h1>
+        <p className="text-red-500">Der opstod en uventet fejl.</p>
+        <pre className="mt-4 p-4 bg-gray-100 rounded">
+          {error instanceof Error ? error.message : 'Unknown error'}
+        </pre>
       </div>
-    );
+    )
   }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section med bølgeeffekt */}
-      <div className="relative bg-[#1AA49A] overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1AA49A]/90 to-[#158C84]/90" />
-          <div className="absolute inset-0 bg-grid-white/[0.1] bg-[length:16px_16px]" />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8">
-          <motion.div 
-            className="text-center"
-            initial={fadeIn.initial}
-            animate={fadeIn.animate}
-            transition={fadeIn.transition}
-          >
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
-              Ekstra Produktpladser
-            </h1>
-            <p className="mt-6 max-w-2xl mx-auto text-xl text-white/90">
-              Udvid din forretning med flere produktpladser og nå ud til flere kunder
-            </p>
-          </motion.div>
-        </div>
-        <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-gray-50" />
-      </div>
-
-      {/* Produktpladser Section */}
-      <div className="relative z-10 -mt-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            {productSlots.map((slot, index) => (
-              <motion.div
-                key={slot.id}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 * (index + 1) }}
-              >
-                <div className={`bg-white rounded-2xl shadow-lg overflow-hidden transition-shadow hover:shadow-xl ${
-                  slot.isPopular ? 'ring-2 ring-[#1AA49A]' : ''
-                }`}>
-                  {slot.isPopular && (
-                    <div className="bg-[#1AA49A] text-white text-sm font-medium px-4 py-1 text-center">
-                      Mest populær
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900">{slot.name}</h3>
-                    <div className="mt-4 flex items-baseline">
-                      <span className="text-4xl font-bold text-gray-900">{slot.price}</span>
-                      <span className="text-xl font-semibold text-gray-500">kr</span>
-                    </div>
-                    <p className="mt-4 text-gray-600">{slot.description}</p>
-                    <div className="mt-6">
-                      <button
-                        onClick={() => handleSelectSlots(slot.id)}
-                        className={`w-full rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-                          slot.isPopular
-                            ? 'bg-[#1AA49A] text-white hover:bg-[#158C84]'
-                            : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                        }`}
-                      >
-                        Vælg {slot.slots} pladser
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <motion.div 
-            className="mt-16 text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-          >
-            <p className="text-gray-600">
-              Ønsker du en komplet pakke? Se vores{' '}
-              <a 
-                href="/packages" 
-                className="text-[#1AA49A] hover:text-[#158C84] font-medium hover:underline transition-colors"
-              >
-                abonnementspakker
-              </a>
-            </p>
-          </motion.div>
-        </div>
-      </div>
-    </div>
-  );
 } 

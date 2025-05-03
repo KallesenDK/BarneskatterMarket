@@ -100,9 +100,6 @@ export default async function DashboardPage({
     // Tjek om brugeren er logget ind
     const { data, error } = await supabase.auth.getSession();
     
-    console.log('Dashboard søgeparametre:', searchParams);
-    console.log('Session status på server:', data.session ? 'Aktiv' : 'Ingen');
-    
     if (!data.session) {
       return <AuthError />;
     }
@@ -118,12 +115,12 @@ export default async function DashboardPage({
     }
     
   } catch (error) {
-    console.error('Uventet fejl i dashboard-siden:', error);
+
     return <AuthError />;
   }
 }
 
-export function DashboardContent() {
+// export function DashboardContent() {
   return (
     <div className="space-y-8">
       {/* Statistik kort */}

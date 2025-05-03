@@ -125,7 +125,7 @@ export default function UsersPage() {
       // Transform data to match our User interface
       let transformedUsers: User[] = [];
 
-      if (Array.isArray(users) && users.every(isValidUser)) {
+      if (Array.isArray(users)) {
         transformedUsers = users.map(user => ({
           id: user.id,
           email: user.auth_users?.[0]?.email ?? '',

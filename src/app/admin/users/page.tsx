@@ -350,7 +350,7 @@ const handleBanUser = async () => {
       end_date: oneWeek.toISOString(),
     });
     setIsBanOpen(true);
-  };
+  }
 
   if (loading) {
     return (

@@ -123,24 +123,26 @@ export default function UsersPage() {
       if (error) throw error;
 
       // Transform data to match our User interface
-      const transformedUsers = users.map(user => ({
-        id: user.auth_users.id,
-        email: user.auth_users.email,
-        created_at: user.auth_users.created_at,
-        role: user.role,
-        profile: {
-          first_name: user.first_name,
-          last_name: user.last_name,
-          address: user.address,
-          postal_code: user.postal_code,
-          phone: user.phone,
-          banned_until: user.banned_until,
-          credits: user.credits,
-          avatar_url: user.avatar_url,
-          subscription_end_date: user.subscription_end_date,
-        },
-      }));
-
+      let transformedUsers: User[] = [];
+      if (Array.isArray(users)) {
+        transformedUsers = users.map(user => ({
+          id: user.id,
+          email: user.email,
+          created_at: user.created_at,
+          role: user.role,
+          profile: {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            address: user.address,
+            postal_code: user.postal_code,
+            phone: user.phone,
+            banned_until: user.banned_until,
+            credits: user.credits,
+            avatar_url: user.avatar_url,
+            subscription_end_date: user.subscription_end_date,
+          },
+        }));
+      }
       setUsers(transformedUsers);
     } catch (error) {
       console.error('Fejl ved hentning af brugere:', error);

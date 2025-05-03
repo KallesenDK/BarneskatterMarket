@@ -125,23 +125,25 @@ export default function UsersPage() {
       // Transform data to match our User interface
       let transformedUsers: User[] = [];
       if (Array.isArray(users)) {
-        transformedUsers = users.map(user => ({
-          id: user.id,
-          email: user.email,
-          created_at: user.created_at,
-          role: user.role,
-          profile: {
-            first_name: user.first_name,
-            last_name: user.last_name,
-            address: user.address,
-            postal_code: user.postal_code,
-            phone: user.phone,
-            banned_until: user.banned_until,
-            credits: user.credits,
-            avatar_url: user.avatar_url,
-            subscription_end_date: user.subscription_end_date,
-          },
-        }));
+        transformedUsers = users
+          .filter((user: any) => user && typeof user.id === 'string' && typeof user.email === 'string')
+          .map(user => ({
+            id: user.id,
+            email: user.email,
+            created_at: user.created_at,
+            role: user.role,
+            profile: {
+              first_name: user.first_name,
+              last_name: user.last_name,
+              address: user.address,
+              postal_code: user.postal_code,
+              phone: user.phone,
+              banned_until: user.banned_until,
+              credits: user.credits,
+              avatar_url: user.avatar_url,
+              subscription_end_date: user.subscription_end_date,
+            },
+          }));
       }
       setUsers(transformedUsers);
     } catch (error) {

@@ -318,41 +318,45 @@ const handleDeleteUser = async (userId: string) => {
 };
 
 // Ban bruger
-const handleBanUser = async () => {
-  if (!selectedUser) return;
+  // Ban bruger
+  const handleBanUser = async () => {
+    if (!selectedUser) return;
 
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const { error } = await supabase
-      .from('user_bans')
-      .insert({
-        user_id: selectedUser.id,
-        banned_by: user.id,
-        reason: banData.reason,
-        start_date: banData.start_date,
-        end_date: banData.end_date,
+      const { error } = await supabase
+        .from('user_bans')
+        .insert({
+          user_id: selectedUser.id,
+          banned_by: user.id,
+          reason: banData.reason,
+          start_date: banData.start_date,
+          end_date: banData.end_date,
+        });
+
+      if (error) throw error;
+
+      setIsBanOpen(false);
+      setSelectedUser(null);
+      setSelectedUser(user);
+      const today = new Date();
+      const oneWeek = new Date(today);
+      oneWeek.setDate(today.getDate() + 7);
+      
+      setBanData({
+        reason: '',
+        start_date: today.toISOString(),
+        end_date: oneWeek.toISOString(),
       });
+      setIsBanOpen(true);
+    } catch (error) {
+      console.error('Fejl ved ban af bruger:', error);
+    }
+  };
 
-    if (error) throw error;
-
-    setIsBanOpen(false);
-    setSelectedUser(null);
-    setSelectedUser(user);
-    const today = new Date();
-    const oneWeek = new Date(today);
-    oneWeek.setDate(today.getDate() + 7);
-    
-    setBanData({
-      reason: '',
-      start_date: today.toISOString(),
-      end_date: oneWeek.toISOString(),
-    });
-    setIsBanOpen(true);
-  }
-};
-
+  // --- Resten af komponenten ---
 
   if (loading) {
     return (

@@ -585,4 +585,3 @@ const handleBanUser = async () => {
       </Dialog>
     </div>
   );
-} 

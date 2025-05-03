@@ -356,7 +356,6 @@ const handleDeleteUser = async (userId: string) => {
     }
   };
 
-  // --- Resten af komponenten ---
 
   if (loading) {
     return (

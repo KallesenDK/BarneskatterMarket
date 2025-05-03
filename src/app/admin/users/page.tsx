@@ -283,21 +283,19 @@ export default function UsersPage() {
         start_date: '',
         end_date: '',
       });
+      setFormData({
+        email: '',
+        password: '',
+        role: 'user',
+        first_name: '',
+        last_name: '',
+        address: '',
+        postal_code: '',
+        phone: '',
+      });
     } catch (error) {
       console.error('Fejl ved ban af bruger:', error);
     }
-    setFormData({
-      email: '',
-      password: '',
-      role: 'user',
-      first_name: '',
-      last_name: '',
-      address: '',
-      postal_code: '',
-      phone: '',
-    });
-  } catch (error) {
-    console.error('Fejl ved opdatering af bruger:', error);
   }
 };
 

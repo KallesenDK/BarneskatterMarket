@@ -76,7 +76,6 @@ export default function UsersPage() {
       end_date: '',
     });
   }
-  }
   const { supabase } = useSupabase();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);

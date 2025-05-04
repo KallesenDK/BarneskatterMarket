@@ -65,6 +65,18 @@ export default function UsersPage() {
       phone: user.profile.phone || '',
     });
   }
+
+  // Funktion til at håndtere ban af bruger
+  function handleBan(user: User) {
+    setSelectedUser(user);
+    setIsBanOpen(true);
+    setBanData({
+      reason: '',
+      start_date: '',
+      end_date: '',
+    });
+  }
+  }
   const { supabase } = useSupabase();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);

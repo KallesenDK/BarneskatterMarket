@@ -11,83 +11,66 @@ import {
   ArrowUpRight
 } from 'lucide-react'
 
-// Statistikker
-const stats = [
-  {
-    title: 'Total Brugere',
-    value: '120',
-    change: '+12%',
-    changeType: 'increase',
-    icon: Users
-  },
-  {
-    title: 'Aktive Pakker',
-    value: '45',
-    change: '+8%',
-    changeType: 'increase',
-    icon: Package
-  },
-  {
-    title: 'Nye Beskeder',
-    value: '23',
-    change: '-5%',
-    changeType: 'decrease',
-    icon: MessageSquare
-  },
-  {
-    title: 'Ordrer i Dag',
-    value: '8',
-    change: '+20%',
-    changeType: 'increase',
-    icon: ShoppingCart
-  }
-]
-
-// Seneste ordrer
-const recentOrders = [
-  {
-    kunde: 'Anders Hansen',
-    beløb: 'kr 2.999',
-    status: 'Betalt',
-    dato: '10 min siden'
-  },
-  {
-    kunde: 'Marie Jensen',
-    beløb: 'kr 1.499',
-    status: 'Afventer',
-    dato: '2 timer siden'
-  },
-  {
-    kunde: 'Peter Nielsen',
-    beløb: 'kr 4.999',
-    status: 'Betalt',
-    dato: '3 timer siden'
-  }
-]
+// Statistikker og ordrer dynamisk via state
+const statIcons = [Users, Package, MessageSquare, ShoppingCart];
 
 export default function AdminDashboard() {
-  const { supabase } = useSupabase()
-  const [loading, setLoading] = useState(true)
+  type StatType = { title: string; value: string; icon: any };
+  type OrderType = { kunde: string; beløb: string; status: string; dato: string };
+
+  const { supabase } = useSupabase();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<StatType[]>([
+    { title: 'Total Brugere', value: '-', icon: Users },
+    { title: 'Aktive Pakker', value: '-', icon: Package },
+    { title: 'Nye Beskeder', value: '-', icon: MessageSquare },
+    { title: 'Ordrer i Dag', value: '-', icon: ShoppingCart }
+  ]);
+  const [recentOrders, setRecentOrders] = useState<OrderType[]>([]);
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+    const fetchData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        window.location.href = '/auth/signin'
-        return
+        window.location.href = '/auth/signin';
+        return;
       }
-      setLoading(false)
-    }
+      // Hent statistik
+      const [{ count: userCount }, { count: packageCount }, { count: messageCount }, { count: ordersTodayCount }, { data: orders }] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('subscription_packages').select('*', { count: 'exact', head: true }),
+        supabase.from('messages').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).gte('created_at', new Date().toISOString().slice(0, 10)),
+        supabase.from('orders').select('id, customer_name, total_amount, status, created_at').order('created_at', { ascending: false }).limit(5)
+      ]);
 
-    checkSession()
-  }, [supabase])
+      setStats([
+        { title: 'Total Brugere', value: String(userCount ?? 0), icon: Users },
+        { title: 'Aktive Pakker', value: String(packageCount ?? 0), icon: Package },
+        { title: 'Nye Beskeder', value: String(messageCount ?? 0), icon: MessageSquare },
+        { title: 'Ordrer i Dag', value: String(ordersTodayCount ?? 0), icon: ShoppingCart }
+      ]);
+
+      setRecentOrders(
+        (orders || []).map((order: any) => ({
+          kunde: order.customer_name || 'Ukendt',
+          beløb: order.total_amount ? `kr ${order.total_amount}` : '-',
+          status: order.status === 'paid' ? 'Betalt' : 'Afventer',
+          dato: order.created_at ? new Date(order.created_at).toLocaleString('da-DK') : '-'
+        })) as OrderType[]
+      );
+      setLoading(false);
+    };
+    fetchData();
+    // eslint-disable-next-line
+  }, [supabase]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1AA49A]"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -100,7 +83,7 @@ export default function AdminDashboard() {
       {/* Statistik kort */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         {stats.map((stat) => {
-          const Icon = stat.icon
+          const Icon = stat.icon;
           return (
             <Card key={stat.title} className="relative overflow-hidden">
               <div className="p-6">
@@ -109,15 +92,6 @@ export default function AdminDashboard() {
                     <div className="text-sm font-medium text-gray-500">{stat.title}</div>
                     <div className="mt-2 flex items-baseline">
                       <div className="text-2xl font-semibold text-gray-900">{stat.value}</div>
-                      <span 
-                        className={`ml-2 text-sm font-medium ${
-                          stat.changeType === 'increase' 
-                            ? 'text-green-600' 
-                            : 'text-red-600'
-                        }`}
-                      >
-                        {stat.change}
-                      </span>
                     </div>
                   </div>
                   <div className="flex items-center justify-center rounded-full bg-[#1AA49A]/10 p-3">
@@ -126,7 +100,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </Card>
-          )
+          );
         })}
       </div>
 
@@ -159,32 +133,88 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {recentOrders.map((order, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {order.kunde}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {order.beløb}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      order.status === 'Betalt'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {order.dato}
-                  </td>
+              {recentOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="text-center py-4 text-gray-400">Ingen ordrer fundet</td>
                 </tr>
-              ))}
+              ) : (
+                recentOrders.map((order, index) => (
+                  <tr key={index} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {order.kunde}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {order.beløb}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        order.status === 'Betalt'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {order.dato}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}
+
+  const { supabase } = useSupabase();
+  const [loading, setLoading] = useState(true);
+  type StatType = { title: string; value: string; icon: any };
+type OrderType = { kunde: string; beløb: string; status: string; dato: string };
+
+const [stats, setStats] = useState<StatType[]>([
+  { title: 'Total Brugere', value: '-', icon: Users },
+  { title: 'Aktive Pakker', value: '-', icon: Package },
+  { title: 'Nye Beskeder', value: '-', icon: MessageSquare },
+  { title: 'Ordrer i Dag', value: '-', icon: ShoppingCart }
+]);
+const [recentOrders, setRecentOrders] = useState<OrderType[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/auth/signin';
+        return;
+      }
+      // Hent statistik
+      const [{ count: userCount }, { count: packageCount }, { count: messageCount }, { count: ordersTodayCount }, { data: orders }] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('subscription_packages').select('*', { count: 'exact', head: true }),
+        supabase.from('messages').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('*', { count: 'exact', head: true }).gte('created_at', new Date().toISOString().slice(0, 10)),
+        supabase.from('orders').select('id, customer_name, total_amount, status, created_at').order('created_at', { ascending: false }).limit(5)
+      ]);
+
+      setStats([
+        { title: 'Total Brugere', value: String(userCount ?? 0), icon: Users },
+        { title: 'Aktive Pakker', value: String(packageCount ?? 0), icon: Package },
+        { title: 'Nye Beskeder', value: String(messageCount ?? 0), icon: MessageSquare },
+        { title: 'Ordrer i Dag', value: String(ordersTodayCount ?? 0), icon: ShoppingCart }
+      ]);
+
+      setRecentOrders(
+        (orders || []).map((order: any) => ({
+          kunde: order.customer_name || 'Ukendt',
+          beløb: order.total_amount ? `kr ${order.total_amount}` : '-',
+          status: order.status === 'paid' ? 'Betalt' : 'Afventer',
+          dato: order.created_at ? new Date(order.created_at).toLocaleString('da-DK') : '-'
+        })) as OrderType[]
+      );
+      setLoading(false);
+    };
+    fetchData();
+    // eslint-disable-next-line
+  }, [supabase]);

@@ -29,7 +29,6 @@ interface ProductSlot {
   is_active: boolean;
 }
 
-
 function CheckoutPage() {
   const searchParams = useSearchParams();
   const router = useRouter();

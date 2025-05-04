@@ -377,4 +377,12 @@ function CheckoutPage() {
       </div>
     </div>
   );
-} 
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Indlæser…</div>}>
+      <CheckoutPage />
+    </Suspense>
+  );
+}

@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -18,6 +19,7 @@ interface SubscriptionPackage {
   is_active: boolean;
 }
 
+
 interface ProductSlot {
   id: string;
   name: string;
@@ -27,7 +29,8 @@ interface ProductSlot {
   is_active: boolean;
 }
 
-export default function CheckoutPage() {
+
+function CheckoutPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { supabase } = useSupabase();
@@ -65,6 +68,7 @@ export default function CheckoutPage() {
           return;
         }
 
+
         // Hvis der er valgt en produktplads, tjek for aktivt abonnement
         if (slotId) {
           const subscription = await getUserSubscription(user.id);
@@ -74,7 +78,9 @@ export default function CheckoutPage() {
             setError('Du skal have et aktivt abonnement for at købe produktpladser. Køb venligst en pakke først.');
             return;
           }
+
         }
+
 
         // Hent valgt item
         if (packageId) {
@@ -88,6 +94,7 @@ export default function CheckoutPage() {
           if (data) setSelectedPackage(data);
         }
 
+
         if (slotId) {
           const { data, error } = await supabase
             .from('product_slots')
@@ -98,10 +105,12 @@ export default function CheckoutPage() {
           if (error) throw error;
           if (data) setSelectedSlot(data);
         }
+
       } catch (error) {
         console.error('Fejl ved hentning af data:', error);
         setError('Der opstod en fejl ved indlæsning af data');
       }
+
     };
 
     fetchData();
@@ -126,6 +135,7 @@ export default function CheckoutPage() {
     } finally {
       setIsProcessing(false);
     }
+
   };
 
   if (success) {
@@ -152,6 +162,7 @@ export default function CheckoutPage() {
     );
   }
 
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
@@ -171,16 +182,19 @@ export default function CheckoutPage() {
               Se pakker
             </Link>
           )}
+
         </div>
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Link 
           href={selectedPackage ? "/packages" : "/product-slots"}
+
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-8"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
@@ -189,6 +203,7 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Ordre oversigt */}
+
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Ordre oversigt</h2>
             
@@ -199,6 +214,7 @@ export default function CheckoutPage() {
                 <div className="mt-2">
                   <span className="text-lg font-semibold">
                     {selectedPackage.price.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
+
                   </span>
                   <span className="text-sm text-gray-500"> / {selectedPackage.duration_weeks} uger</span>
                 </div>

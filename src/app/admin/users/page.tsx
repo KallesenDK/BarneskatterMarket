@@ -271,7 +271,9 @@ export default function UsersPage() {
 
   // Slet bruger
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Er du sikker på, at du vil slette denne bruger?')) return;
+    if (typeof window !== 'undefined') {
+      if (!window.confirm('Er du sikker på, at du vil slette denne bruger?')) return;
+    }
 
     try {
       const { error } = await supabase
@@ -289,7 +291,7 @@ export default function UsersPage() {
 
 
 
-  if (!confirm('Er du sikker på, at du vil slette denne bruger?')) return;
+  
 
   return (
     <div className="container mx-auto py-8">

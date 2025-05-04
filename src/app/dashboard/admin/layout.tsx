@@ -1,5 +1,6 @@
 'use client'
 
+import SupabaseProvider from '@/components/SupabaseProvider';
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -31,10 +32,12 @@ export default function AdminLayout({
   const pathname = usePathname()
 
   return (
-    <div>
-      <main className="p-0">
-        {children}
-      </main>
-    </div>
+    <SupabaseProvider>
+      <div>
+        <main className="p-0">
+          {children}
+        </main>
+      </div>
+    </SupabaseProvider>
   )
-} 
+}

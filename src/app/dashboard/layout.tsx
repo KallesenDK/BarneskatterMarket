@@ -1,3 +1,4 @@
+import SupabaseProvider from '@/components/SupabaseProvider';
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -15,12 +16,14 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <div className="flex-1 pt-[8vh]">
-        <div className="container space-y-8 mt-8">
-          {children}
+    <SupabaseProvider>
+      <div className="flex min-h-screen flex-col">
+        <div className="flex-1 pt-[8vh]">
+          <div className="container space-y-8 mt-8">
+            {children}
+          </div>
         </div>
       </div>
-    </div>
+    </SupabaseProvider>
   );
-} 
+}

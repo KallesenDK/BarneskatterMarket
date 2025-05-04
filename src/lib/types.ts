@@ -1,11 +1,9 @@
+// Profile og User er nu ens, men hold begge for bagudkompatibilitet
 export interface Profile {
-  id: string;
-  firstName?: string;
-  lastName?: string;
+  id?: string;
   first_name?: string;
   last_name?: string;
   address?: string;
-  postalCode?: string;
   postal_code?: string;
   phone?: string;
   banned_until?: Date;
@@ -17,7 +15,8 @@ export interface Profile {
 }
 
 export interface Product {
-  id: string;
+  [key: string]: any;
+  id?: string;
   title: string;
   description: string;
   price: number;
@@ -43,6 +42,22 @@ export interface Category {
   name: string;
   parentId?: string | null;
   subcategories?: Category[];
+}
+
+export interface User {
+  id?: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  address?: string;
+  postal_code?: string;
+  phone?: string;
+  banned_until?: Date;
+  credits?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export interface Transaction {

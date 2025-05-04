@@ -18,7 +18,7 @@ export function useSanitizedProducts(products: Product[]): Product[] {
       const cleanedProduct = removeId(product);
       
       // Rens også alle tekstfelter for UUID-mønstre
-      Object.keys(cleanedProduct).forEach(key => {
+      (Object.keys(cleanedProduct) as (keyof typeof cleanedProduct)[]).forEach(key => {
         const value = cleanedProduct[key];
         if (typeof value === 'string') {
           cleanedProduct[key] = removeUuidPattern(value);
@@ -39,14 +39,16 @@ export function removeId(product: Product): Product {
   const cleanProduct = { ...product };
   
   // Slet ID felter fra produkt
-  delete cleanProduct.id;
-  delete cleanProduct.user_id;
-  delete cleanProduct.userId;
+  if ('id' in cleanProduct) { cleanProduct.id = undefined; }
+  delete cleanProduct?.user_id;
+  delete cleanProduct?.userId;
   
   // Fjern også bruger ID hvis det findes
   if (cleanProduct.user) {
     cleanProduct.user = { ...cleanProduct.user };
-    delete cleanProduct.user.id;
+    if (cleanProduct.user && 'id' in cleanProduct.user) {
+      if (cleanProduct.user && 'id' in cleanProduct.user) { cleanProduct.user.id = undefined; }
+    }
   }
   
   return cleanProduct;

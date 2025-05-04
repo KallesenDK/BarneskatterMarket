@@ -205,21 +205,18 @@ function ModernProductDetails({ product, urlCategory }: { product: Product, urlC
 
   const handleAddToCart = () => {
     addItem({
-      id: product.id,
+      id: product.id ?? '',
       title: product.title,
-      price: product.discountActive ? (product.discount_price || product.discountPrice || product.price) : product.price,
-      image: product.image_url || product.images?.[0]
+      price: product.discount_active ? (product.discount_price ?? product.price) : product.price,
+      image: product.images && product.images.length > 0 ? product.images[0] : undefined
     });
   };
 
   // Highlights fra produktet
   const highlights = [
-    product.condition && `Stand: ${product.condition}`,
-    product.brand && `Mærke: ${product.brand}`,
-    product.material && `Materiale: ${product.material}`,
-    product.dimensions && `Mål: ${product.dimensions}`,
-    product.weight && `Vægt: ${product.weight}`,
-    product.color && `Farve: ${product.color}`
+    product.category && `Kategori: ${product.category}`,
+    product.tags && product.tags.length > 0 && `Tags: ${product.tags.join(', ')}`,
+    product.location && `Lokation: ${product.location}`
   ].filter(Boolean);
   
   // Bestem lokalitet - vis kun byen, skjul sælger
@@ -230,8 +227,8 @@ function ModernProductDetails({ product, urlCategory }: { product: Product, urlC
     }
     
     // Ellers tjek om der er adresse eller postnummer på bruger
-    if (product.user?.postalCode) {
-      return `${product.user.postalCode.slice(0, 4)}`;
+    if (product.user?.postal_code) {
+      return `${product.user.postal_code.slice(0, 4)}`;
     }
     
     return 'Lokalitet ikke angivet';

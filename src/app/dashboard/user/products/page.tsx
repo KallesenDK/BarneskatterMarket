@@ -217,9 +217,10 @@ export default function ProductsPage() {
       {notifications.map(notification => (
         <Toast
           key={notification.id}
-          message={notification.message}
-          type={notification.type}
-        />
+          variant={notification.type === 'error' ? 'destructive' : 'default'}
+        >
+          {notification.message}
+        </Toast>
       ))}
 
       {selectedProducts.length > 0 && (
@@ -322,7 +323,7 @@ export default function ProductsPage() {
                   {formatMoney(product.price)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatRelativeDate(new Date(product.created_at))}
+                  {formatRelativeDate(product.created_at)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <Link

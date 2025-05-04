@@ -14,7 +14,9 @@ interface CreatePackageModalProps {
   onSuccess: () => void
 }
 
-const defaultPackage = {
+import type { Package } from './EditPackageModal';
+
+const defaultPackage: Omit<Package, 'id'> = {
   name: '',
   duration: 1,
   product_limit: 1,
@@ -27,7 +29,7 @@ const defaultPackage = {
 
 export function CreatePackageModal({ show, onClose, onSuccess }: CreatePackageModalProps) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState(defaultPackage)
+  const [formData, setFormData] = useState<Omit<Package, 'id'>>(defaultPackage)
 
   const supabase = createClientComponentClient()
 
@@ -45,8 +47,8 @@ export function CreatePackageModal({ show, onClose, onSuccess }: CreatePackageMo
           price: formData.price,
           is_popular: formData.is_popular,
           is_active: formData.is_active,
-          sale_price: formData.sale_price,
-          sale_end_date: formData.sale_end_date
+          sale_price: formData.sale_price === undefined ? undefined : formData.sale_price,
+          sale_end_date: formData.sale_end_date === undefined ? undefined : formData.sale_end_date
         }])
 
       if (error) throw error
@@ -122,8 +124,11 @@ export function CreatePackageModal({ show, onClose, onSuccess }: CreatePackageMo
               type="number"
               min="0"
               step="0.01"
-              value={formData.sale_price || ''}
-              onChange={(e) => setFormData({ ...formData, sale_price: e.target.value ? parseFloat(e.target.value) : undefined })}
+              value={formData.sale_price !== undefined ? String(formData.sale_price) : ''}
+              onChange={(e) => setFormData({
+                ...formData,
+                sale_price: e.target.value === '' ? undefined : Number(e.target.value),
+              })}
             />
           </div>
 
@@ -132,8 +137,8 @@ export function CreatePackageModal({ show, onClose, onSuccess }: CreatePackageMo
             <Input
               id="sale_end_date"
               type="date"
-              value={formData.sale_end_date || ''}
-              onChange={(e) => setFormData({ ...formData, sale_end_date: e.target.value || undefined })}
+              value={formData.sale_end_date !== undefined ? formData.sale_end_date : ''}
+              onChange={(e) => setFormData({ ...formData, sale_end_date: e.target.value === '' ? undefined : e.target.value })}
             />
           </div>
           

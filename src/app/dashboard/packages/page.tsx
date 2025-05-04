@@ -122,7 +122,7 @@ export default function PackagesPage() {
           await supabase
             .from('subscription_packages')
             .update({ is_popular: false })
-            .neq('id', editingPackage?.id)
+            .neq('id', (editingPackage as SubscriptionPackage | null)?.id ?? '')
         }
 
         // Revalider /packages siden

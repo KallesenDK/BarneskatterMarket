@@ -21,6 +21,7 @@ type Product = {
   featured: boolean;
   category_name: string;
   image_url: string | null;
+  description?: string;
 };
 
 export default function ProductsPage() {

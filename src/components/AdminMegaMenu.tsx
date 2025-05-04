@@ -96,7 +96,7 @@ export default function AdminMegaMenu() {
         allowHover={true}
       >
         <MenuHandler>
-          <Typography as="div" variant="small" className="font-medium">
+          <Typography placeholder={undefined} onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} as="div" variant="small" className="font-medium">
             <button
               className="flex items-center gap-2 py-3 px-4 font-medium text-gray-900 hover:text-[#BC1964] transition-colors"
               onClick={() => setIsMobileMenuOpen((cur) => !cur)}
@@ -111,25 +111,25 @@ export default function AdminMegaMenu() {
             </button>
           </Typography>
         </MenuHandler>
-        <MenuList className="hidden max-w-screen-xl rounded-xl lg:block shadow-lg">
+        <MenuList placeholder={undefined} onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} className="hidden max-w-screen-xl rounded-xl lg:block shadow-lg">
           <div className="grid grid-cols-3 gap-8 p-6 bg-white">
             {menuItems.map((section, idx) => (
               <div key={idx} className="space-y-4">
-                <Typography variant="h6" color="blue-gray" className="text-sm font-semibold text-gray-900 text-left">
+                <Typography placeholder={undefined} onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} variant="h6" color="blue-gray" className="text-sm font-semibold text-gray-900 text-left">
                   {section.title}
                 </Typography>
                 <div className="space-y-2">
                   {section.items.map((item, itemIdx) => (
                     <Link key={itemIdx} href={item.href}>
-                      <MenuItem className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50/80 transition-colors">
+                      <MenuItem placeholder={undefined} onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50/80 transition-colors">
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-50/50">
                           {<item.icon className="h-6 w-6 text-[#BC1964]" />}
                         </div>
                         <div className="flex flex-col items-start">
-                          <Typography variant="h6" color="blue-gray" className="text-sm font-semibold text-gray-900">
+                          <Typography placeholder={undefined} onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} variant="h6" color="blue-gray" className="text-sm font-semibold text-gray-900">
                             {item.title}
                           </Typography>
-                          <Typography variant="small" color="gray" className="text-xs font-normal text-gray-600">
+                          <Typography placeholder={undefined} onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} variant="small" color="gray" className="text-xs font-normal text-gray-600">
                             {item.description}
                           </Typography>
                         </div>
@@ -147,20 +147,20 @@ export default function AdminMegaMenu() {
           <div className="mt-2 space-y-4 px-4">
             {menuItems.map((section, idx) => (
               <div key={idx} className="space-y-2">
-                <Typography variant="h6" color="blue-gray" className="text-sm font-semibold text-gray-900 text-left">
+                <Typography placeholder={undefined} onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} variant="h6" color="blue-gray" className="text-sm font-semibold text-gray-900 text-left">
                   {section.title}
                 </Typography>
                 {section.items.map((item, itemIdx) => (
                   <Link key={itemIdx} href={item.href}>
-                    <MenuItem className="flex items-start gap-3 rounded-lg hover:bg-gray-50 text-left">
+                    <MenuItem placeholder={undefined} onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} className="flex items-start gap-3 rounded-lg hover:bg-gray-50 text-left">
                       <div className="flex items-start justify-start rounded-lg bg-gray-50 p-2">
                         {<item.icon className="h-5 w-5 text-[#BC1964]" />}
                       </div>
                       <div className="flex flex-col items-start">
-                        <Typography variant="h6" color="blue-gray" className="text-sm font-semibold text-left">
+                        <Typography placeholder={undefined} onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} variant="h6" color="blue-gray" className="text-sm font-semibold text-left">
                           {item.title}
                         </Typography>
-                        <Typography variant="small" color="gray" className="text-xs font-normal text-left">
+                        <Typography placeholder={undefined} onPointerEnterCapture={() => {}} onPointerLeaveCapture={() => {}} variant="small" color="gray" className="text-xs font-normal text-left">
                           {item.description}
                         </Typography>
                       </div>

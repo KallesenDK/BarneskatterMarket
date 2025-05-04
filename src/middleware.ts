@@ -46,11 +46,15 @@ export async function middleware(request: NextRequest) {
     
     try {
       // Hent brugerens profil
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .single();
+      let profile = null;
+      if (session && session.user && session.user.id) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        profile = data;
+      }
 
       console.log('👤 Bruger profil:', profile);
 

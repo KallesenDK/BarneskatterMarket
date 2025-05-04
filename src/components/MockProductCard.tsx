@@ -90,25 +90,26 @@ export default function MockProductCard({ product }: MockProductCardProps) {
   }, [product.title, product.id]);
   
   // Faktiske produktbilleder eller backup billeder
-  const productImages = useMemo(() => {
+  const productImages: string[] = useMemo(() => {
     if (!product.images || !Array.isArray(product.images) || product.images.length === 0) {
       return [];
     }
     
     // Håndter forskellige formater af billeder
-    return product.images.map(image => {
-      let imageUrl = '';
-      if (typeof image === 'string') {
-        imageUrl = image;
-      } else if (typeof image === 'object' && image !== null && 'url' in image) {
-        imageUrl = image.url;
-      }
-      
-      if (!imageUrl) return null;
-      
-      // Bevar billedet men fjern ID fra visningen
-      return imageUrl;
-    }).filter(Boolean);
+    return product.images
+      .map(image => {
+        if (typeof image === 'string') {
+          return image;
+        } else if (
+          typeof image === 'object' &&
+          image !== null &&
+          typeof (image as any).url === 'string'
+        ) {
+          return (image as { url: string }).url;
+        }
+        return undefined;
+      })
+      .filter((img): img is string => typeof img === 'string' && !!img);
   }, [product.images]);
   
   // Backup billeder hvis vi ikke har produktbilleder
@@ -186,12 +187,12 @@ export default function MockProductCard({ product }: MockProductCardProps) {
     e.stopPropagation(); // Stop event bubble
     
     addItem({
-      id: product.id,
+      id: product.id ?? '',
       title: product.title,
       price: (product.discountActive || product.discount_active) 
         ? (product.discount_price || product.discountPrice || product.price)
         : product.price,
-      image: product.image_url || product.images?.[0]
+      image: product.images?.[0]
     });
   };
 

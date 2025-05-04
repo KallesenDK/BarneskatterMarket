@@ -87,16 +87,6 @@ function ProductDetails({ product }: { product: Product }) {
               {product.category}
             </Link>
           </li>
-          {product.subcategory && (
-            <>
-              <li>
-                <span className="mx-1">/</span>
-              </li>
-              <li className="hover:text-gray-700">
-                {product.subcategory}
-              </li>
-            </>
-          )}
         </ol>
       </nav>
       

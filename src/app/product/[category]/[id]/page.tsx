@@ -16,16 +16,16 @@ const mockProduct: Product = {
   images: ['/images/product1.jpg', '/images/product1-2.jpg', '/images/product1-3.jpg'],
   tags: ['Elektronik', 'Smartphone', 'Apple'],
   category: 'Elektronik',
-  createdAt: new Date('2023-05-15'),
-  expiresAt: new Date('2023-06-15'),
+  created_at: new Date('2023-05-15'),
+  expires_at: new Date('2023-06-15'),
   userId: 'user1',
   user: {
     id: 'user1',
-    firstName: 'Anders',
-    lastName: 'Jensen',
+    first_name: 'Anders',
+    last_name: 'Jensen',
     credits: 0,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    created_at: new Date(),
+    updated_at: new Date()
   }
 };
 
@@ -137,7 +137,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         <ProductClientComponents 
           product={product} 
           category={product.category}
-          productId={product.id}
+          productId={product.id ?? ''}
           urlCategory={urlCategory}
         />
       </div>

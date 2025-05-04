@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
+import type { Package } from '@/components/modals/EditPackageModal';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
 import { Table, TableHeader, TableBody, TableCell, TableHead, TableRow } from '@/components/ui/table';
@@ -11,17 +12,18 @@ import { format } from 'date-fns';
 import { da } from 'date-fns/locale';
 
 const PackagesPage = () => {
-  const [packages, setPackages] = useState([]);
+  const [packages, setPackages] = useState<Package[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
 
-  const handleEdit = (pkg) => {
+
+  const handleEdit = (pkg: Package) => {
     setSelectedPackage(pkg);
     setShowEditModal(true);
   };
 
-  const handleDelete = (pkg) => {
+  const handleDelete = (pkg: Package) => {
     // Implement the delete logic here
   };
 
@@ -74,9 +76,7 @@ const PackagesPage = () => {
                 <TableCell>
                   {pkg.sale_price ? (
                     <div className="flex flex-col">
-                      <span className="text-sm text-red-600">
-                        Aktiv til {format(new Date(pkg.sale_end_date), 'PPP', { locale: da })}
-                      </span>
+                      <span className="text-sm text-red-600">{pkg.sale_end_date ? format(new Date(pkg.sale_end_date || ''), 'dd.MM.yyyy', { locale: da }) : ''}</span>
                       <span className="text-sm font-medium">{pkg.sale_price} kr.</span>
                     </div>
                   ) : (

@@ -179,10 +179,6 @@ export default function EditProductPage() {
         const { error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(filePath, file, {
-            onUploadProgress: (progress) => {
-              const percentage = (progress.loaded / progress.total) * 100;
-              setUploadProgress(Math.round(percentage));
-            },
           });
           
         if (uploadError) throw uploadError;

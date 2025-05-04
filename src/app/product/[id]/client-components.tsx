@@ -225,8 +225,8 @@ function ModernProductDetails({ product, hideProductId }: { product: Product, hi
     }
     
     // Ellers tjek om der er adresse eller postnummer på bruger
-    if (product.user?.postalCode) {
-      return `${product.user.postalCode.slice(0, 4)}`;
+    if (product.user?.postal_code) {
+      return `${product.user.postal_code.slice(0, 4)}`;
     }
     
     return 'Lokalitet ikke angivet';
@@ -332,7 +332,7 @@ function ModernProductDetails({ product, hideProductId }: { product: Product, hi
       {/* Handlingsknapper */}
       <div className="grid grid-cols-2 gap-3 mb-8">
         <button 
-          onClick={() => console.log('Køb produkt:', product.id)}
+          onClick={() => console.log('Køb produkt:', product.id ?? '')}
           className="flex items-center justify-center rounded-lg bg-[#1AA49A] px-6 py-3 text-base font-medium text-white hover:bg-[#158f86] transition-colors duration-300"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -344,7 +344,7 @@ function ModernProductDetails({ product, hideProductId }: { product: Product, hi
         <InterestModal 
           triggers={[]} 
           onSubmit={(message, contactInfo) => {
-            console.log('Interesse udtrykt:', { message, contactInfo, productId: product.id });
+            console.log('Interesse udtrykt:', { message, contactInfo, productId: product.id ?? '' });
           }}
           buttonClassName="flex items-center justify-center rounded-lg border border-[#BC1964] bg-white px-6 py-3 text-base font-medium text-[#BC1964] hover:bg-[#BC1964]/5 transition-colors duration-300"
           buttonText="Vis interesse"
@@ -423,16 +423,16 @@ function RelatedProducts({ currentProductId, category }: { currentProductId: str
       
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {relatedProducts.map((product) => (
-          <Link href={`/product/${product.id}`} key={product.id} className="group relative flex flex-col h-full">
+          <Link href={`/product/${product.id ?? ''}`} key={product.id ?? ''} className="group relative flex flex-col h-full">
             <div className="aspect-square w-full overflow-hidden rounded-xl bg-gray-50 group-hover:shadow-md transition-all duration-300 border border-gray-100">
-              {!imageError[product.id] && product.images && product.images.length > 0 ? (
+              {!imageError[product.id ?? ''] && product.images && product.images.length > 0 ? (
                 <div className="w-full h-full relative">
                   <img
                     src={product.images[0]}
                     alt={product.title}
                     className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
                     onError={() => {
-                      handleImageError(product.id);
+                      handleImageError(product.id ?? '');
                     }}
                   />
                   

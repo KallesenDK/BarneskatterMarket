@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSupabase } from '@/components/SupabaseProvider'
-import { formatDate, formatRelativeDate } from '@/lib/utils'
+import { formatRelativeDate } from '@/lib/utils'
 
 type Product = {
   id: string
@@ -247,7 +247,7 @@ export default function ProductsOverview({ userId, productLimits }: ProductsOver
                       {formatRelativeDate(product.created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[#0F172A]/70">
-                      {formatDate(new Date(product.expires_at))}
+                      {new Date(product.expires_at).toLocaleDateString('da-DK')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {isExpired ? (

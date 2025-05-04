@@ -5,13 +5,18 @@ import { getSupabaseClient } from '@/lib/supabase';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+type Product = {
+  id: string;
+  [key: string]: any;
+};
+
 export async function GET() {
   try {
     console.log('API: Henter produkter fra databasen...');
     const supabase = getSupabaseClient();
     
     // 1. Hent produkter fra Supabase med brugeroplysninger
-    const { data: products, error } = await supabase
+    const { data, error } = await supabase
       .from('products')
       .select(`
         *,
@@ -29,6 +34,10 @@ export async function GET() {
       console.error('Supabase fejl ved hentning af produkter:', error);
       return NextResponse.json({ message: 'Fejl ved hentning af produkter' }, { status: 500 });
     }
+    const products = Array.isArray(data)
+  ? data.filter((item) => !!item && typeof item.id === 'string')
+  : [];
+
     
     console.log(`API: Fandt ${products.length} produkter, henter nu billeder...`);
     
@@ -36,10 +45,17 @@ export async function GET() {
     const productsWithImages = await Promise.all(
       products.map(async (product) => {
         // Hent billeder for produktet
+        if (!product || typeof product.id !== 'string') {
+          // Hvis produktet ikke har et id, spring billedhentning over
+          return {
+            ...product,
+            images: product.images || []
+          };
+        }
         const { data: imageData, error: imageError } = await supabase
           .from('product_images')
           .select('url, display_order')
-          .eq('product_id', product.id)
+          .eq('product_id', product.id as string)
           .order('display_order', { ascending: true });
         
         if (imageError) {

@@ -85,13 +85,23 @@ export default function ProductsPage() {
       const validProducts = response.data.map((product: any) => ({
         id: product.id || 'unknown',
         title: product.title || 'Unavailable',
-        price: product.price || 0,
         description: product.description || '',
-        category: product.category || 'Andet',
+        price: typeof product.price === 'number' ? product.price : 0,
+        discountPrice: typeof product.discountPrice === 'number' ? product.discountPrice : undefined,
+        discount_price: typeof product.discount_price === 'number' ? product.discount_price : undefined,
+        discountActive: typeof product.discountActive === 'boolean' ? product.discountActive : undefined,
+        discount_active: typeof product.discount_active === 'boolean' ? product.discount_active : undefined,
         images: Array.isArray(product.images) ? product.images : [],
-        user: product.user || null,
+        tags: Array.isArray(product.tags) ? product.tags : [],
+        category: product.category || 'Andet',
+        location: typeof product.location === 'string' ? product.location : '',
+        createdAt: product.createdAt ? new Date(product.createdAt) : undefined,
+        expiresAt: product.expiresAt ? new Date(product.expiresAt) : undefined,
         created_at: product.created_at || new Date().toISOString(),
-        location: product.location || ''
+        expires_at: product.expires_at || undefined,
+        userId: product.userId || undefined,
+        user_id: product.user_id || undefined,
+        user: product.user || null,
       }));
       
       setRawProducts(validProducts);

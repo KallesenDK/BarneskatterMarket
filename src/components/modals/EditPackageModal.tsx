@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
-interface Package {
+export interface Package {
   id: string
   name: string
   duration: number

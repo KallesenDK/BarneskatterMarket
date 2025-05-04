@@ -22,6 +22,11 @@ export async function getUserProfile(userId: string): Promise<User | null> {
     .eq('id', userId)
     .single();
 
+  if (!data || typeof data !== 'object') {
+    console.error('Fejl ved hentning af brugerprofil: data er ikke et objekt');
+    return null;
+  }
+
   if (error) {
     console.error('Fejl ved hentning af brugerprofil:', error);
     return null;
@@ -34,15 +39,20 @@ export async function updateUserProfile(userId: string, userData: Partial<User>)
   const { data, error } = await supabase
     .from('profiles')
     .update({
-      first_name: userData.firstName,
-      last_name: userData.lastName,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
       address: userData.address,
-      postal_code: userData.postalCode,
+      postal_code: userData.postal_code,
       phone: userData.phone,
     })
     .eq('id', userId)
     .select('*')
     .single();
+
+  if (!data || typeof data !== 'object') {
+    console.error('Fejl ved opdatering af brugerprofil: data er ikke et objekt');
+    return null;
+  }
 
   if (error) {
     console.error('Fejl ved opdatering af brugerprofil:', error);
@@ -79,6 +89,11 @@ export async function getProducts(category?: string, limit = 10): Promise<Produc
     
     const { data, error } = await query
     
+    if (!data || !Array.isArray(data)) {
+      console.error('Fejl ved hentning af produkter: data er ikke et array');
+      return [];
+    }
+    
     if (error) throw error
     
     // Indlæs produktbilleder for hvert produkt
@@ -87,7 +102,7 @@ export async function getProducts(category?: string, limit = 10): Promise<Produc
       const { data: imageData, error: imageError } = await supabase
         .from('product_images')
         .select('url, display_order')
-        .eq('product_id', product.id)
+        .eq('product_id', String(product.id))
         .order('display_order', { ascending: true });
         
       if (imageError) {
@@ -95,7 +110,7 @@ export async function getProducts(category?: string, limit = 10): Promise<Produc
       }
 
       // Sikre at urls er gyldige
-      let allImages = [];
+      let allImages: string[] = [];
       
       // Tjek eksisterende billeder fra product tabellen
       if (product.images && Array.isArray(product.images)) {
@@ -109,7 +124,7 @@ export async function getProducts(category?: string, limit = 10): Promise<Produc
       
       // Tilføj billeder fra product_images tabellen
       if (imageData && Array.isArray(imageData)) {
-        const imageUrls = imageData
+        const imageUrls: string[] = (imageData as { url: string }[])
           .filter(img => img && img.url && typeof img.url === 'string' && img.url.trim() !== '')
           .map(img => img.url);
         
@@ -131,7 +146,7 @@ export async function getProducts(category?: string, limit = 10): Promise<Produc
       return product;
     }));
     
-    return productsWithImages as Product[];
+    return productsWithImages.map(p => transformProductData(p));
   } catch (error) {
     console.error('Fejl ved hentning af produkter:', error)
     return []
@@ -158,6 +173,11 @@ export async function getProductById(id: string): Promise<Product | null> {
       `)
       .eq('id', id)
       .single();
+    
+    if (!data || typeof data !== 'object') {
+      console.error('Fejl ved hentning af produkt: data er ikke et objekt');
+      return null;
+    }
     
     if (error) {
       console.error('Fejl ved hentning af produkt:', error);
@@ -189,7 +209,7 @@ export async function getProductById(id: string): Promise<Product | null> {
     console.log("Billeddata fra product_images tabellen:", imageData);
     
     // Hent billedliste fra storage bucket som backup
-    let storageImages = [];
+    let storageImages: string[] = [];
     try {
       const userId = data.user_id;
       
@@ -221,9 +241,9 @@ export async function getProductById(id: string): Promise<Product | null> {
     }
     
     // Sikre at urls er gyldige
-    let imageUrls = [];
+    let imageUrls: string[] = [];
     if (imageData && Array.isArray(imageData)) {
-      imageUrls = imageData
+      imageUrls = (imageData as any[])
         .filter(img => img && img.url && typeof img.url === 'string' && img.url.trim() !== '')
         .map(img => img.url);
       
@@ -234,7 +254,7 @@ export async function getProductById(id: string): Promise<Product | null> {
     }
     
     // Kombinér eksisterende billeder (hvis der er nogen) og nye billeder
-    let allImages = [];
+    let allImages: string[] = [];
     
     // Tjek om data.images indeholder gyldige billeder (fra products tabellen)
     if (data.images && Array.isArray(data.images)) {
@@ -299,6 +319,11 @@ export async function createProduct(productData: Omit<Product, 'id' | 'createdAt
     .select('*')
     .single();
 
+  if (!data || typeof data !== 'object') {
+    console.error('Fejl ved oprettelse af produkt: data er ikke et objekt');
+    return null;
+  }
+
   if (error) {
     console.error('Fejl ved oprettelse af produkt:', error);
     return null;
@@ -307,7 +332,7 @@ export async function createProduct(productData: Omit<Product, 'id' | 'createdAt
   return transformProductData(data);
 }
 
-export async function updateProduct(productId: string, productData: Partial<Product>): Promise<Product | null> {
+export async function updateProduct(product_id: string, productData: Partial<Product>): Promise<Product | null> {
   const { data, error } = await supabase
     .from('products')
     .update({
@@ -321,9 +346,14 @@ export async function updateProduct(productId: string, productData: Partial<Prod
       category: productData.category,
       expires_at: productData.expiresAt,
     })
-    .eq('id', productId)
+    .eq('id', product_id)
     .select('*')
     .single();
+
+  if (!data || typeof data !== 'object') {
+    console.error('Fejl ved opdatering af produkt: data er ikke et objekt');
+    return null;
+  }
 
   if (error) {
     console.error('Fejl ved opdatering af produkt:', error);
@@ -333,11 +363,11 @@ export async function updateProduct(productId: string, productData: Partial<Prod
   return transformProductData(data);
 }
 
-export async function deleteProduct(productId: string): Promise<boolean> {
+export async function deleteProduct(product_id: string): Promise<boolean> {
   const { error } = await supabase
     .from('products')
     .delete()
-    .eq('id', productId);
+    .eq('id', product_id);
 
   if (error) {
     console.error('Fejl ved sletning af produkt:', error);
@@ -354,6 +384,11 @@ export async function getCategories(): Promise<Category[]> {
     .select('*')
     .order('name');
 
+  if (!data || !Array.isArray(data)) {
+    console.error('Fejl ved hentning af kategorier: data er ikke et array');
+    return [];
+  }
+
   if (error) {
     console.error('Fejl ved hentning af kategorier:', error);
     return [];
@@ -363,18 +398,23 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 // Besked-funktioner
-export async function getMessages(userId: string, productId?: string): Promise<Message[]> {
+export async function getMessages(userId: string, product_id?: string): Promise<Message[]> {
   let query = supabase
     .from('messages')
     .select('*, sender:sender_id(first_name, last_name), receiver:receiver_id(first_name, last_name)')
     .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
     .order('created_at', { ascending: false });
 
-  if (productId) {
-    query = query.eq('product_id', productId);
+  if (product_id) {
+    query = query.eq('product_id', product_id);
   }
 
   const { data, error } = await query;
+
+  if (!data || !Array.isArray(data)) {
+    console.error('Fejl ved hentning af beskeder: data er ikke et array');
+    return [];
+  }
 
   if (error) {
     console.error('Fejl ved hentning af beskeder:', error);
@@ -388,14 +428,19 @@ export async function sendMessage(messageData: Omit<Message, 'id' | 'createdAt' 
   const { data, error } = await supabase
     .from('messages')
     .insert({
-      sender_id: messageData.senderId,
-      receiver_id: messageData.receiverId,
-      product_id: messageData.productId,
+      sender_id: messageData.sender_id,
+      receiver_id: messageData.receiver_id,
+      product_id: messageData.product_id,
       content: messageData.content,
       read: false,
     })
     .select('*')
     .single();
+
+  if (!data || typeof data !== 'object') {
+    console.error('Fejl ved afsendelse af besked: data er ikke et objekt');
+    return null;
+  }
 
   if (error) {
     console.error('Fejl ved afsendelse af besked:', error);
@@ -413,6 +458,11 @@ export async function getCreditPackages(): Promise<CreditPackage[]> {
     .eq('active', true)
     .order('credits');
 
+  if (!data || !Array.isArray(data)) {
+    console.error('Fejl ved hentning af kredit pakker: data er ikke et array');
+    return [];
+  }
+
   if (error) {
     console.error('Fejl ved hentning af kredit pakker:', error);
     return [];
@@ -425,12 +475,12 @@ export async function getCreditPackages(): Promise<CreditPackage[]> {
 function transformUserData(data: any): User {
   return {
     id: data.id,
-    firstName: data.first_name,
-    lastName: data.last_name,
+    first_name: data.first_name,
+    last_name: data.last_name,
     address: data.address,
-    postalCode: data.postal_code,
+    postal_code: data.postal_code,
     phone: data.phone,
-    bannedUntil: data.banned_until ? new Date(data.banned_until) : null,
+    banned_until: data.banned_until ? new Date(data.banned_until) : undefined,
     credits: data.credits,
     createdAt: new Date(data.created_at),
     updatedAt: new Date(data.updated_at),
@@ -445,7 +495,7 @@ function transformProductData(data: any): Product {
     price: data.price,
     discountPrice: data.discount_price,
     discountActive: data.discount_active,
-    images: data.images,
+    images: data.images as string[],
     tags: data.tags || [],
     category: data.category,
     location: data.location || null,
@@ -457,14 +507,14 @@ function transformProductData(data: any): Product {
   if (data.user) {
     product.user = {
       id: data.user.id,
-      firstName: data.user.first_name,
-      lastName: data.user.last_name,
+      first_name: data.user.first_name,
+      last_name: data.user.last_name,
       address: data.user.address || null,
-      postalCode: data.user.postal_code || null,
+      postal_code: data.user.postal_code || null,
       phone: data.user.phone || null,
       credits: 0,
-      createdAt: new Date(data.user.created_at),
-      updatedAt: new Date(data.user.updated_at),
+      created_at: new Date(data.user.created_at),
+      updated_at: new Date(data.user.updated_at),
     };
   }
 
@@ -482,35 +532,13 @@ function transformCategoryData(data: any): Category {
 function transformMessageData(data: any): Message {
   const message: Message = {
     id: data.id,
-    senderId: data.sender_id,
-    receiverId: data.receiver_id,
-    productId: data.product_id,
+    sender_id: data.sender_id,
+    receiver_id: data.receiver_id,
+    product_id: data.product_id,
     content: data.content,
     read: data.read,
-    createdAt: new Date(data.created_at),
+    created_at: new Date(data.created_at),
   };
-
-  if (data.sender) {
-    message.sender = {
-      id: data.sender_id,
-      firstName: data.sender.first_name,
-      lastName: data.sender.last_name,
-      credits: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-  }
-
-  if (data.receiver) {
-    message.receiver = {
-      id: data.receiver_id,
-      firstName: data.receiver.first_name,
-      lastName: data.receiver.last_name,
-      credits: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-  }
 
   return message;
 }
@@ -534,16 +562,25 @@ export async function getProfile(userId: string): Promise<Profile | null> {
       .eq('id', userId)
       .single()
     
+    if (!data || typeof data !== 'object') {
+      console.error('Fejl ved hentning af profil: data er ikke et objekt');
+      return null;
+    }
+    
     if (error) throw error
     
-    return data as Profile
+    if (data && 'id' in data && 'credits' in data) {
+      return { ...data, credits: (data as any).credits ?? 0 } as Profile
+    } else {
+      return null
+    }
   } catch (error) {
     console.error('Fejl ved hentning af profil:', error)
     return null
   }
 }
 
-export async function updateProfile(userId: string, profileData: Partial<Profile>) {
+export async function updateProfile(userId: string, profileData: Partial<Profile>): Promise<Profile | null> {
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -552,16 +589,25 @@ export async function updateProfile(userId: string, profileData: Partial<Profile
       .select()
       .single()
     
+    if (!data || typeof data !== 'object') {
+      console.error('Fejl ved opdatering af profil: data er ikke et objekt');
+      return null;
+    }
+    
     if (error) throw error
     
-    return data as Profile
+    if (data && 'id' in data && 'credits' in data) {
+      return { ...data, credits: (data as any).credits ?? 0 } as Profile
+    } else {
+      return null
+    }
   } catch (error) {
     console.error('Fejl ved opdatering af profil:', error)
     return null
   }
 }
 
-export async function createProfile(userId: string, profileData: Partial<Profile>) {
+export async function createProfile(userId: string, profileData: Partial<Profile>): Promise<Profile | null> {
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -569,9 +615,18 @@ export async function createProfile(userId: string, profileData: Partial<Profile
       .select()
       .single()
     
+    if (!data || typeof data !== 'object') {
+      console.error('Fejl ved oprettelse af profil: data er ikke et objekt');
+      return null;
+    }
+    
     if (error) throw error
     
-    return data as Profile
+    if (data && 'id' in data && 'credits' in data) {
+      return { ...data, credits: (data as any).credits ?? 0 } as Profile
+    } else {
+      return null
+    }
   } catch (error) {
     console.error('Fejl ved oprettelse af profil:', error)
     return null
@@ -605,6 +660,11 @@ export async function getSubscriptionPackages() {
     .eq('is_active', true)
     .order('price', { ascending: true });
 
+  if (!data || !Array.isArray(data)) {
+    console.error('Fejl ved hentning af abonnement pakker: data er ikke et array');
+    return [];
+  }
+
   if (error) throw error;
   return data;
 }
@@ -614,6 +674,11 @@ export async function getAllSubscriptionPackages() {
     .from('subscription_packages')
     .select('*')
     .order('price', { ascending: true });
+
+  if (!data || !Array.isArray(data)) {
+    console.error('Fejl ved hentning af alle abonnement pakker: data er ikke et array');
+    return [];
+  }
 
   if (error) throw error;
   return data;
@@ -627,6 +692,11 @@ export async function updateSubscriptionPackage(id: string, updates: Partial<Sub
     .select()
     .single();
 
+  if (!data || typeof data !== 'object') {
+    console.error('Fejl ved opdatering af abonnement pakke: data er ikke et objekt');
+    return null;
+  }
+
   if (error) throw error;
   return data;
 }
@@ -638,6 +708,11 @@ export async function getProductSlots() {
     .select('*')
     .eq('is_active', true)
     .order('slot_count', { ascending: true });
+
+  if (!data || !Array.isArray(data)) {
+    console.error('Fejl ved hentning af produkt slots: data er ikke et array');
+    return [];
+  }
 
   if (error) throw error;
   return data;
@@ -674,6 +749,11 @@ export async function purchaseSubscriptionPackage(packageId: string, userId: str
     .single();
 
   if (pkgError) throw pkgError;
+
+  // Type guard for pkg
+  if (!pkg || typeof pkg.duration_weeks !== 'number') {
+    throw new Error('Ugyldig eller manglende duration_weeks på abonnementspakke');
+  }
 
   const expiryDate = new Date();
   expiryDate.setDate(expiryDate.getDate() + (pkg.duration_weeks * 7));
@@ -719,7 +799,7 @@ export async function purchaseProductSlots(slotId: string, userId: string) {
   const { data, error } = await supabase
     .from('profiles')
     .update({
-      product_limit: (currentLimit?.product_limit || 0) + slot.slot_count
+      product_limit: Number(currentLimit?.product_limit ?? 0) + Number(slot.slot_count)
     })
     .eq('id', userId)
     .select()
@@ -757,7 +837,7 @@ export async function getUserSubscription(userId: string) {
     const { data: package_data, error: pkgError } = await supabase
       .from('subscription_packages')
       .select('*')
-      .eq('id', subscription.plan_id)
+      .eq('id', String(subscription.plan_id))
       .single();
 
     if (pkgError) {
@@ -802,7 +882,7 @@ export async function getUserProductLimits(userId: string) {
     return {
       productLimit,
       usedProducts,
-      availableProducts: Math.max(0, productLimit - usedProducts)
+      availableProducts: Math.max(0, Number(productLimit) - Number(usedProducts))
     };
   } catch (error) {
     console.error('Fejl i getUserProductLimits:', error);

@@ -14,10 +14,8 @@ export default async function DebugPage() {
   const cookieList = allCookies.map(cookie => ({
     name: cookie.name,
     value: cookie.value.substring(0, 20) + (cookie.value.length > 20 ? '...' : ''),
-    expires: cookie.expires ? new Date(cookie.expires * 1000).toISOString() : 'Session',
-    path: cookie.path || '/',
-    httpOnly: cookie.httpOnly || false,
-    secure: cookie.secure || false,
+    expires: 'Ukendt',
+    path: '-',
   }))
   
   return (
@@ -71,12 +69,7 @@ export default async function DebugPage() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Sti
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      HttpOnly
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Secure
-                    </th>
+
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -94,12 +87,7 @@ export default async function DebugPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {cookie.path}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {cookie.httpOnly ? 'Ja' : 'Nej'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {cookie.secure ? 'Ja' : 'Nej'}
-                      </td>
+
                     </tr>
                   ))}
                 </tbody>

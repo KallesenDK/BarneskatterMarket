@@ -1,5 +1,17 @@
 'use client';
 
+import type { SubscriptionPackage } from '@/lib/types';
+
+type Subscription = {
+  expires_at?: string;
+  package?: SubscriptionPackage | { [key: string]: any };
+  [key: string]: any;
+};
+
+function isSubscriptionPackage(pkg: any): pkg is SubscriptionPackage {
+  return pkg && typeof pkg === 'object' && typeof pkg.name === 'string' && typeof pkg.id === 'string';
+}
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -87,18 +99,21 @@ export default function DashboardHeader() {
 
         // Hent abonnementsinformation
         try {
-          const subscription = await getUserSubscription(user.id);
+          const subscription: Subscription | null = await getUserSubscription(user.id);
           
-          if (subscription) {
+          if (subscription && subscription.package && isSubscriptionPackage(subscription.package)) {
             setHasActivePeriod(true);
-            setPackageName(subscription.package?.name || 'Standard');
-            
-            // Beregn antal dage tilbage
-            const endDate = new Date(subscription.expires_at);
-            const today = new Date();
-            const diffTime = endDate.getTime() - today.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            setDaysLeft(Math.max(0, diffDays));
+            setPackageName(subscription.package.name);
+            // Beregn antal dage tilbage hvis expires_at findes
+            if (subscription.expires_at) {
+              const endDate = new Date(subscription.expires_at);
+              const today = new Date();
+              const diffTime = endDate.getTime() - today.getTime();
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              setDaysLeft(Math.max(0, diffDays));
+            } else {
+              setDaysLeft(0);
+            }
           } else {
             setHasActivePeriod(false);
             setDaysLeft(0);
@@ -111,7 +126,11 @@ export default function DashboardHeader() {
         // Hent produktgrænser
         try {
           const limits = await getUserProductLimits(user.id);
-          setProductLimits(limits);
+          setProductLimits({
+            productLimit: typeof limits.productLimit === 'number' ? limits.productLimit : 0,
+            usedProducts: typeof limits.usedProducts === 'number' ? limits.usedProducts : 0,
+            availableProducts: typeof limits.availableProducts === 'number' ? limits.availableProducts : 0,
+          });
         } catch (limitsError) {
           console.warn('Fejl ved hentning af produktgrænser:', limitsError);
         }

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, AuthFlowType } from '@supabase/supabase-js'
 
 // Sikr at environment variabler er tilgængelige
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -22,7 +22,7 @@ const supabaseOptions = {
     persistSession: true,
     storageKey: 'supabase.auth.token',
     detectSessionInUrl: true,
-    flowType: 'implicit',
+    flowType: 'implicit' as AuthFlowType,
     debug: false,
   },
   cookies: {

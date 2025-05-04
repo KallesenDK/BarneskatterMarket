@@ -1,3 +1,4 @@
+'use client';
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
@@ -9,11 +10,6 @@ import DebugLogs from '@/components/DebugLogs'
 import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ subsets: ['latin'] })
-
-export const metadata: Metadata = {
-  title: 'Norsk Marketplace',
-  description: 'Din markedsplass for norske produkter',
-}
 
 export default function RootLayout({
   children,
@@ -37,4 +33,4 @@ export default function RootLayout({
       </body>
     </html>
   )
-} 
+}

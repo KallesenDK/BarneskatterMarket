@@ -1,8 +1,5 @@
-'use client'
-
-import SupabaseProvider from '@/components/SupabaseProvider';
-import { useState } from 'react'
-import Link from 'next/link'
+'use client';
+import DashboardClientProvider from '../DashboardClientProvider';
 import { usePathname } from 'next/navigation'
 import { 
   LayoutDashboard,
@@ -32,12 +29,10 @@ export default function AdminLayout({
   const pathname = usePathname()
 
   return (
-    <SupabaseProvider>
-      <div>
-        <main className="p-0">
-          {children}
-        </main>
-      </div>
-    </SupabaseProvider>
+    <div>
+      <main className="p-0">
+        {children}
+      </main>
+    </div>
   )
 }

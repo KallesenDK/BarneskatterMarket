@@ -272,7 +272,10 @@ function CheckoutPage() {
               <div className="flex justify-between items-center">
                 <span className="font-medium">Total</span>
                 <span className="text-xl font-bold">
-                  {(selectedPackage?.price || selectedSlot?.price || 0).toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
+                  {cartItems.length > 0
+                    ? cartItems.reduce((sum, item) => sum + (item.price || 0), 0).toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })
+                    : (selectedPackage?.price || selectedSlot?.price || 0).toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })
+                  }
                 </span>
               </div>
             </div>

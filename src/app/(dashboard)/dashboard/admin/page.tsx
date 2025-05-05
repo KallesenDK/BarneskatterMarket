@@ -4,41 +4,6 @@ export default function AdminDashboard() {
   return <div>hello</div>;
 }
 
-            <Card key={stat.title} className="relative overflow-hidden">
-              <div className="p-6">
-                <div className="flex items-center">
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-500">{stat.title}</div>
-                    <div className="mt-2 flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{stat.value}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-center rounded-full bg-[#1AA49A]/10 p-3">
-                    <Icon className="h-6 w-6 text-[#1AA49A]" />
-                  </div>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Seneste ordrer */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-gray-900">Seneste Ordrer</h2>
-            <button className="text-[#1AA49A] hover:text-[#1AA49A]/80 p-1 rounded-full hover:bg-[#1AA49A]/5">
-              <ArrowUpRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                  Kunde
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                   Beløb

@@ -227,24 +227,56 @@ function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Ordre oversigt */}
-
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Ordre oversigt</h2>
-            
-            {selectedPackage && (
-              <div className="border-b pb-4 mb-4">
-                <h3 className="font-medium">{selectedPackage.name}</h3>
-                <p className="text-gray-600">{selectedPackage.description}</p>
-                <div className="mt-2">
-                  <span className="text-lg font-semibold">
-                    {selectedPackage.price.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
 
-                  </span>
-                  <span className="text-sm text-gray-500"> / {selectedPackage.duration_weeks} uger</span>
-                </div>
+            {/* Vis varer fra cartItems hvis de findes */}
+            {cartItems.length > 0 && (
+              <div className="mb-4">
+                <ul className="divide-y divide-gray-200">
+                  {cartItems.map(item => (
+                    <li key={item.id} className="flex items-center gap-4 py-2">
+                      {item.image && (
+                        <img src={item.image} alt={item.title} className="w-14 h-14 object-cover rounded border" />
+                      )}
+                      <div className="flex-1">
+                        <div className="font-medium">{item.title}</div>
+                        {item.description && <div className="text-xs text-gray-500">{item.description}</div>}
+                      </div>
+                      <div className="font-semibold whitespace-nowrap">{item.price?.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' }) || ''}</div>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 
+            {/* Vis selectedPackage/selectedSlot hvis de findes */}
+            {(selectedPackage || selectedSlot) && (
+              <div>
+                {selectedPackage && (
+                  <div className="border-b pb-4 mb-4">
+                    <h3 className="font-medium">{selectedPackage.name}</h3>
+                    <p className="text-gray-600">{selectedPackage.description}</p>
+                    <div className="mt-2">
+                      <span className="text-lg font-semibold">
+                        {selectedPackage.price.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
+                      </span>
+                      <span className="text-sm text-gray-500"> / {selectedPackage.duration_weeks} uger</span>
+                    </div>
+                  </div>
+                )}
+                {selectedSlot && (
+                  <div className="border-b pb-4 mb-4">
+                    <h3 className="font-medium">{selectedSlot.name}</h3>
+                    <p className="text-gray-600">{selectedSlot.description}</p>
+                    <div className="mt-2">
+                      <span className="text-lg font-semibold">
+                        {selectedSlot.price.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
+                      </span>
+                      <span className="text-sm text-gray-500"> / {selectedSlot.slot_count} pladser</span>
+                    </div>
+                  </div>
+                )}
             {selectedSlot && (
               <div className="border-b pb-4 mb-4">
                 <h3 className="font-medium">{selectedSlot.name}</h3>
@@ -262,7 +294,11 @@ function CheckoutPage() {
               <div className="flex justify-between items-center">
                 <span className="font-medium">Total</span>
                 <span className="text-xl font-bold">
-                  {(selectedPackage?.price || selectedSlot?.price || 0).toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
+                  {/* Total fra cartItems hvis de findes, ellers selectedPackage/Slot */}
+                  {cartItems.length > 0
+                    ? cartItems.reduce((sum, item) => sum + (item.price || 0), 0).toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })
+                    : (selectedPackage?.price || selectedSlot?.price || 0).toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })
+                  }
                 </span>
               </div>
             </div>

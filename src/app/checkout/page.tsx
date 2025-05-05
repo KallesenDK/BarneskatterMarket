@@ -31,6 +31,18 @@ interface ProductSlot {
 
 function CheckoutPage() {
   const searchParams = useSearchParams();
+  const itemsParam = searchParams.get('items');
+  const [cartItems, setCartItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (itemsParam) {
+      try {
+        setCartItems(JSON.parse(decodeURIComponent(itemsParam)));
+      } catch (e) {
+        setCartItems([]);
+      }
+    }
+  }, [itemsParam]);
   const router = useRouter();
   const { supabase } = useSupabase();
   const [selectedPackage, setSelectedPackage] = useState<SubscriptionPackage | null>(null);
@@ -191,6 +203,19 @@ function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {cartItems.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-bold mb-2">Din kurv</h2>
+            <ul className="space-y-2">
+              {cartItems.map(item => (
+                <li key={item.id} className="flex items-center gap-2">
+                  <span>{item.title}</span>
+                  <span className="text-muted-foreground">{item.price} kr.</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <Link 
           href={selectedPackage ? "/packages" : "/product-slots"}
 

@@ -368,8 +368,8 @@ function CheckoutPage() {
                   <span className="flex items-center justify-center">
                     <CreditCard className="w-5 h-5 mr-2" />
                     Betal nu
-   
-              )}
+                  </span>
+                )}
               </button>
             </form>
           </div>

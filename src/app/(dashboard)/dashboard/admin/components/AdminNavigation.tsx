@@ -18,7 +18,7 @@ const navigation = [
   { name: "Produkt Slots", href: "/dashboard/admin/product-slots", icon: Grid },
   { name: "Beskeder", href: "/dashboard/admin/messages", icon: MessageSquare },
   { name: "Ordrer", href: "/dashboard/admin/orders", icon: ShoppingCart },
-  { name: "Indstillinger", href: "/dashboard/admin/settings", icon: Settings },
+  { name: "Indstillinger", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function AdminNavigation() {

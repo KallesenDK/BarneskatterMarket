@@ -4,41 +4,6 @@ export default function AdminDashboard() {
   return <div>hello</div>;
 }
 
-
-      setRecentOrders(
-        (orders || []).map((order: any) => ({
-          kunde: order.customer_name || 'Ukendt',
-          beløb: order.total_amount ? `kr ${order.total_amount}` : '-',
-          status: order.status === 'paid' ? 'Betalt' : 'Afventer',
-          dato: order.created_at ? new Date(order.created_at).toLocaleString('da-DK') : '-'
-        })) as OrderType[]
-      );
-      setLoading(false);
-    };
-    fetchData();
-    // eslint-disable-next-line
-  }, [supabase]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1AA49A]"></div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-500">Oversigt over din forretning</p>
-      </div>
-
-      {/* Statistik kort */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
             <Card key={stat.title} className="relative overflow-hidden">
               <div className="p-6">
                 <div className="flex items-center">

@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 import { useSupabase } from '@/components/SupabaseProvider'
 import { useCart } from '@/components/Cart/CartProvider'
 import Image from 'next/image'
-import AdminMegaMenu from './AdminMegaMenu'
+
 
 const navLinks = [
   { href: '/', label: 'Hjem' },
@@ -155,7 +155,7 @@ export default function Navbar() {
               
               {isAdmin && (
                 <div className="sm:ps-3">
-                  <AdminMegaMenu />
+                  
                 </div>
               )}
 

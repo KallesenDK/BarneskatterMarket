@@ -86,7 +86,6 @@ const recentOrders = [
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseProvider";
-import AuthError from "../components/AuthError";
 
 export default function DashboardPage() {
   const router = useRouter();

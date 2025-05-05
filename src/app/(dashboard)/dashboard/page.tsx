@@ -28,35 +28,6 @@ export default function DashboardPage() {
       }
     };
     checkSessionAndRedirect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return null;
-}
-
-  useEffect(() => {
-    const checkSessionAndRedirect = async () => {
-      try {
-        // Tjek om vi kommer fra login-siden med auth-parameter
-        const authParam = searchParams.get("auth");
-        // Tjek session
-        const { data, error } = await supabase.auth.getSession();
-        if (!data.session) {
-          router.replace("/dashboard/main/auth-error");
-          return;
-        }
-        const isAdmin = data.session.user.email === "kenneth@sigmatic.dk";
-        if (isAdmin) {
-          router.replace("/dashboard/admin");
-        } else {
-          router.replace("/dashboard/user");
-        }
-      } catch (error) {
-        router.replace("/dashboard/main/auth-error");
-      }
-    };
-    checkSessionAndRedirect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return null;

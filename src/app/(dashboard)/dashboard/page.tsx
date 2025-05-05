@@ -82,40 +82,42 @@ const recentOrders = [
   }
 ]
 
-export default async function DashboardPage({
-  searchParams
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
-  try {
-    // Tjek om vi kommer fra login-siden med auth-parameter
-    const authParam = searchParams.auth;
-    
-    // Opret Supabase klient med cookies fra anmodningen
-    const cookieStore = cookies();
-    const supabase = createServerComponentClient({ 
-      cookies: () => cookieStore 
-    });
-    
-    // Tjek om brugeren er logget ind
-    const { data, error } = await supabase.auth.getSession();
-    
-    if (!data.session) {
-      return <AuthError />;
-    }
+"use client";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSupabase } from "@/components/SupabaseProvider";
+import AuthError from "../components/AuthError";
 
-    // Tjek om brugeren er admin
-    const isAdmin = data.session.user.email === 'kenneth@sigmatic.dk';
-    
-    // Omdiriger baseret på brugerens rolle
-    if (isAdmin) {
-      redirect('/dashboard/admin');
-    } else {
-      redirect('/dashboard/user');
-    }
-    
-  } catch (error) {
+export default function DashboardPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { supabase } = useSupabase();
 
-    return <AuthError />;
-  }
+  useEffect(() => {
+    const checkSessionAndRedirect = async () => {
+      try {
+        // Tjek om vi kommer fra login-siden med auth-parameter
+        const authParam = searchParams.get("auth");
+        // Tjek session
+        const { data, error } = await supabase.auth.getSession();
+        if (!data.session) {
+          router.replace("/dashboard/main/auth-error");
+          return;
+        }
+        const isAdmin = data.session.user.email === "kenneth@sigmatic.dk";
+        if (isAdmin) {
+          router.replace("/dashboard/admin");
+        } else {
+          router.replace("/dashboard/user");
+        }
+      } catch (error) {
+        router.replace("/dashboard/main/auth-error");
+      }
+    };
+    checkSessionAndRedirect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return null;
 }
+

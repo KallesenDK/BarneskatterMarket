@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseProvider";
+import AdminStatistics from "./components/AdminStatistics";
+import TopMonthlyOrders from "./components/TopMonthlyOrders";
 
 export default function AdminDashboard() {
   const { supabase } = useSupabase();
@@ -52,6 +54,7 @@ export default function AdminDashboard() {
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
       <AdminStatistics />
+      <TopMonthlyOrders />
     </div>
   );
 }

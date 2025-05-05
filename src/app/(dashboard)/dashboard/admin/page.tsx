@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseProvider";
 
-export const dynamic = "force-dynamic";
-
 export default function AdminDashboard() {
   const { supabase } = useSupabase();
   const router = useRouter();

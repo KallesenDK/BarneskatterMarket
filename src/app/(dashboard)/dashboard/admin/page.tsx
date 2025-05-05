@@ -1,21 +1,9 @@
-'use client'
+"use client";
 export const dynamic = "force-dynamic";
-
-import { useState, useEffect } from 'react'
-import { useSupabase } from '@/components/SupabaseProvider'
-import { Card } from '@/components/ui/card'
-import { 
-  Users, 
-  Package, 
-  MessageSquare, 
-  ShoppingCart,
-  ArrowUpRight
-} from 'lucide-react'
-
-// Statistikker og ordrer dynamisk via state
-const statIcons = [Users, Package, MessageSquare, ShoppingCart];
-
 export default function AdminDashboard() {
+  return <div>hello</div>;
+}
+
   type StatType = { title: string; value: string; icon: any };
   type OrderType = { kunde: string; beløb: string; status: string; dato: string };
 

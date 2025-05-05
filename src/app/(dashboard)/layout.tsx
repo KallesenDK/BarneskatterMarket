@@ -7,7 +7,9 @@ import AdminNavigation from './dashboard/admin/components/AdminNavigation';
 export default function DashboardGroupLayout({ children }: { children: React.ReactNode }) {
   return (
     <SupabaseProvider>
-      <AdminNavigation />
+      <div className="container">
+        <AdminNavigation />
+      </div>
       {children}
     </SupabaseProvider>
   );

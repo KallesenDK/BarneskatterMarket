@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 import DashboardClientProvider from '../DashboardClientProvider';
 import { usePathname } from 'next/navigation'
+import AdminNavigation from './components/AdminNavigation';
 import { 
   LayoutDashboard,
   Users,
@@ -31,6 +32,7 @@ export default function AdminLayout({
 
   return (
     <div>
+      <AdminNavigation />
       <main className="p-0">
         {children}
       </main>

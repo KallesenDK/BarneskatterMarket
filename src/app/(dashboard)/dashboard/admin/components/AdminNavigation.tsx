@@ -16,9 +16,9 @@ const navigation = [
   { name: "Brugere", href: "/dashboard/admin/users", icon: Users },
   { name: "Pakker", href: "/dashboard/packages", icon: Package },
   { name: "Produkt Slots", href: "/dashboard/admin/product-slots", icon: Grid },
-  { name: "Beskeder", href: "/dashboard/messages", icon: MessageSquare },
-  { name: "Ordrer", href: "/dashboard/orders", icon: ShoppingCart },
-  { name: "Indstillinger", href: "/dashboard/settings", icon: Settings },
+  { name: "Beskeder", href: "/dashboard/admin/messages", icon: MessageSquare },
+  { name: "Ordrer", href: "/dashboard/admin/orders", icon: ShoppingCart },
+  { name: "Indstillinger", href: "/dashboard/admin/settings", icon: Settings },
 ];
 
 export default function AdminNavigation() {

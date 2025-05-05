@@ -18,6 +18,7 @@ interface GridSettings {
 interface SiteSettings {
   creditPackagesGrid: GridSettings;
   subscriptionPackagesGrid: GridSettings;
+  stripeSecretKey?: string;
 }
 
 export default function SettingsPage() {
@@ -41,10 +42,11 @@ export default function SettingsPage() {
         if (data) {
           const creditPackagesGrid = data.find(s => s.key === 'credit_packages_grid')?.value || { lg: 3, md: 2, sm: 1 };
           const subscriptionPackagesGrid = data.find(s => s.key === 'subscription_packages_grid')?.value || { lg: 3, md: 2, sm: 1 };
-          
+          const stripeSecretKey = data.find(s => s.key === 'stripe_secret_key')?.value || '';
           setSettings({
             creditPackagesGrid,
-            subscriptionPackagesGrid
+            subscriptionPackagesGrid,
+            stripeSecretKey
           });
         }
       } catch (error) {
@@ -56,6 +58,40 @@ export default function SettingsPage() {
 
     loadSettings();
   }, [supabase]);
+
+  const [stripeKeyInput, setStripeKeyInput] = useState(settings.stripeSecretKey || '');
+  const [savingStripeKey, setSavingStripeKey] = useState(false);
+
+  const saveStripeKey = async () => {
+    setSavingStripeKey(true);
+    try {
+      const adminCheck = await fetch('/api/check-admin');
+      const { isAdmin, error } = await adminCheck.json();
+      if (!adminCheck.ok || error || !isAdmin) {
+        toast({
+          variant: "destructive",
+          title: "Fejl",
+          description: error || 'Du har ikke administrator rettigheder'
+        });
+        setSavingStripeKey(false);
+        return;
+      }
+      const { error: updateError } = await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'stripe_secret_key',
+          value: stripeKeyInput,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key', ignoreDuplicates: false });
+      if (updateError) throw updateError;
+      setSettings(prev => ({ ...prev, stripeSecretKey: stripeKeyInput }));
+      toast({ title: "Success", description: "Stripe nøgle gemt", className: "bg-green-500 text-white" });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Fejl", description: error instanceof Error ? error.message : 'Kunne ikke gemme Stripe nøgle' });
+    } finally {
+      setSavingStripeKey(false);
+    }
+  };
 
   const saveGridSettings = async (key: string, newValue: GridSettings) => {
     try {
@@ -167,6 +203,37 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Stripe API Key Sektion */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Stripe API Key</CardTitle>
+              <CardDescription>
+                Indtast din Stripe Secret Key for at aktivere betalinger på platformen.<br />
+                <span className="text-xs text-gray-400">(Gemmes sikkert i databasen)</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Label htmlFor="stripe-key">Stripe Secret Key</Label>
+              <input
+                id="stripe-key"
+                type="password"
+                value={stripeKeyInput}
+                onChange={e => setStripeKeyInput(e.target.value)}
+                className="w-full border rounded px-3 py-2"
+                placeholder="sk_live_..."
+                autoComplete="off"
+              />
+              <button
+                onClick={saveStripeKey}
+                disabled={savingStripeKey}
+                className="bg-primary text-white rounded px-4 py-2 disabled:opacity-50"
+              >
+                Gem Stripe nøgle
+              </button>
+              {settings.stripeSecretKey && <div className="text-xs text-green-600">Stripe-nøgle er gemt</div>}
+            </CardContent>
+          </Card>
+
           {/* Layout Indstillinger */}
           <Card>
             <CardHeader>

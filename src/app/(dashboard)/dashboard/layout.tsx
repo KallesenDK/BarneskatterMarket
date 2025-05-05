@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = "force-dynamic";
 import DashboardClientProvider from './DashboardClientProvider';
 
 export default function DashboardLayout({

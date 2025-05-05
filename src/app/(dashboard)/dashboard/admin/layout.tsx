@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = "force-dynamic";
 import DashboardClientProvider from '../DashboardClientProvider';
 import { usePathname } from 'next/navigation'
 import { 

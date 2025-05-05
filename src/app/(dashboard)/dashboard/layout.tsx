@@ -11,6 +11,7 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Kun admin-menuen, ikke Navbar */}
       <AdminNavigation />
       <div className="flex-1 pt-[8vh]">
         <div className="container space-y-8 mt-8">

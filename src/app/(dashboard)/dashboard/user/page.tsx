@@ -145,8 +145,12 @@ export default function UserDashboardPage() {
             >
               Køb pakke
             </Link>
-            <Link
+              <Link
               href="/product-slots"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#BC1964] hover:bg-[#A01453] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BC1964]"
+            >
+              Køb mere plads
+            </Link>
           </div>
         </div>
       </div>

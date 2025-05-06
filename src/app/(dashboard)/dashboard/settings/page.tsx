@@ -20,6 +20,7 @@ interface SiteSettings {
   subscriptionPackagesGrid: GridSettings;
   stripeSecretKey?: string;
   stripePublishableKey?: string;
+  thankYouContent?: string;
 }
 
 export default function SettingsPage() {
@@ -45,11 +46,13 @@ export default function SettingsPage() {
           const subscriptionPackagesGrid = data.find(s => s.key === 'subscription_packages_grid')?.value || { lg: 3, md: 2, sm: 1 };
           const stripeSecretKey = data.find(s => s.key === 'stripe_secret_key')?.value || '';
           const stripePublishableKey = data.find(s => s.key === 'stripe_publishable_key')?.value || '';
+          const thankYouContent = data.find(s => s.key === 'thank_you_content')?.value || '';
           setSettings({
             creditPackagesGrid,
             subscriptionPackagesGrid,
             stripeSecretKey,
-            stripePublishableKey
+            stripePublishableKey,
+            thankYouContent
           });
         }
       } catch (error) {
@@ -68,6 +71,8 @@ export default function SettingsPage() {
   const [savingStripePublishableKey, setSavingStripePublishableKey] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
   const [showPublishable, setShowPublishable] = useState(false);
+  const [thankYouContent, setThankYouContent] = useState(settings.thankYouContent || '');
+  const [savingThankYou, setSavingThankYou] = useState(false);
 
   const saveStripeKey = async () => {
     setSavingStripeKey(true);
@@ -97,6 +102,37 @@ export default function SettingsPage() {
       toast({ variant: "destructive", title: "Fejl", description: error instanceof Error ? error.message : 'Kunne ikke gemme Stripe Secret Key' });
     } finally {
       setSavingStripeKey(false);
+    }
+  };
+
+  const saveThankYouContent = async () => {
+    setSavingThankYou(true);
+    try {
+      const adminCheck = await fetch('/api/check-admin');
+      const { isAdmin, error } = await adminCheck.json();
+      if (!adminCheck.ok || error || !isAdmin) {
+        toast({
+          variant: "destructive",
+          title: "Fejl",
+          description: error || 'Du har ikke administrator rettigheder'
+        });
+        setSavingThankYou(false);
+        return;
+      }
+      const { error: updateError } = await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'thank_you_content',
+          value: thankYouContent,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key', ignoreDuplicates: false });
+      if (updateError) throw updateError;
+      setSettings(prev => ({ ...prev, thankYouContent }));
+      toast({ title: "Success", description: "Thank You-side opdateret", className: "bg-green-500 text-white" });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Fejl", description: error instanceof Error ? error.message : 'Kunne ikke gemme Thank You-side' });
+    } finally {
+      setSavingThankYou(false);
     }
   };
 
@@ -242,6 +278,35 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Thank You-side tekst */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Thank You-side</CardTitle>
+              <CardDescription>
+                Redigér teksten som vises for kunden efter gennemført ordre.<br />
+                Du kan bruge HTML eller Markdown.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Label htmlFor="thankyou-content">Indhold</Label>
+              <textarea
+                id="thankyou-content"
+                value={thankYouContent}
+                onChange={e => setThankYouContent(e.target.value)}
+                className="w-full border rounded px-3 py-2 min-h-[120px]"
+                placeholder="Tak for din ordre! Vi har modtaget din bestilling..."
+              />
+              <button
+                onClick={saveThankYouContent}
+                disabled={savingThankYou}
+                className="bg-primary text-white rounded px-4 py-2 disabled:opacity-50"
+              >
+                Gem Thank You-tekst
+              </button>
+              {settings.thankYouContent && <div className="text-xs text-green-600">Thank You-tekst er gemt</div>}
+            </CardContent>
+          </Card>
+
           {/* Stripe API Keys Sektion */}
           <Card>
             <CardHeader>

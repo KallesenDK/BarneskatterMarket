@@ -12,6 +12,10 @@ interface Transaction {
   commission_amount: number;
   status: string;
   created_at: string;
+  // Relaterede data fra Supabase join
+  buyer?: { id: string; full_name?: string; email?: string };
+  seller?: { id: string; full_name?: string; email?: string };
+  product?: { id: string; title?: string };
 }
 
 export default function OrdersPage() {

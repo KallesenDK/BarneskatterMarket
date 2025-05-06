@@ -26,13 +26,20 @@ export default function UserDashboardPage() {
           .single();
         setProfile(profileData);
 
-        // Hent abonnement
-        const { data: subscriptionData } = await supabase
+        // Hent aktivt abonnement (nyeste hvis flere)
+        const { data: subscriptionData, error: subError } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
         console.log('SUBSCRIPTION DATA:', subscriptionData);
+
+        if (subError) {
+          console.error('Fejl ved hentning af abonnement:', subError);
+        }
 
         let planData = null;
         if (subscriptionData?.plan_id) {

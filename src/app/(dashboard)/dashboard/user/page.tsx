@@ -147,12 +147,9 @@ export default function UserDashboardPage() {
             </Link>
             <Link
               href="/product-slots"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#BC1964] hover:bg-[#A01453] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#BC1964]"
-            >
-              Køb mere plads
-            </Link>
           </div>
         </div>
+      </div>
 
       <UserNavigation />
 
@@ -168,8 +165,6 @@ export default function UserDashboardPage() {
           </Link>
         </div>
 
-      
-      
         {products.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-600 mb-4">Du har ingen produkter til salg.</p>
@@ -180,9 +175,7 @@ export default function UserDashboardPage() {
               Opret dit første produkt
             </Link>
           </div>
-
-      
-              ) : (
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product: any) => (
               <div key={product.id} className="border rounded-lg p-4">
@@ -201,19 +194,12 @@ export default function UserDashboardPage() {
                     Rediger
                   </Link>
                 </div>
-
-      
-                    </div>
-
-      
-                  ))}
+              </div>
+            ))}
           </div>
-
-      
-              )}
+        )}
       </div>
-
-      
-          </div>
+    </div>
   );
+}
 } 

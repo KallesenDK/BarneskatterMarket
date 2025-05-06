@@ -47,7 +47,7 @@ export default function CreateProductPage() {
           .from('subscriptions')
           .select('*')
           .eq('user_id', user.id)
-          .eq('is_active', true)
+          .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();

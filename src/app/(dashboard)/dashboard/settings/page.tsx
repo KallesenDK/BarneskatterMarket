@@ -19,6 +19,7 @@ interface SiteSettings {
   creditPackagesGrid: GridSettings;
   subscriptionPackagesGrid: GridSettings;
   stripeSecretKey?: string;
+  stripePublishableKey?: string;
 }
 
 export default function SettingsPage() {
@@ -43,10 +44,12 @@ export default function SettingsPage() {
           const creditPackagesGrid = data.find(s => s.key === 'credit_packages_grid')?.value || { lg: 3, md: 2, sm: 1 };
           const subscriptionPackagesGrid = data.find(s => s.key === 'subscription_packages_grid')?.value || { lg: 3, md: 2, sm: 1 };
           const stripeSecretKey = data.find(s => s.key === 'stripe_secret_key')?.value || '';
+          const stripePublishableKey = data.find(s => s.key === 'stripe_publishable_key')?.value || '';
           setSettings({
             creditPackagesGrid,
             subscriptionPackagesGrid,
-            stripeSecretKey
+            stripeSecretKey,
+            stripePublishableKey
           });
         }
       } catch (error) {
@@ -61,6 +64,10 @@ export default function SettingsPage() {
 
   const [stripeKeyInput, setStripeKeyInput] = useState(settings.stripeSecretKey || '');
   const [savingStripeKey, setSavingStripeKey] = useState(false);
+  const [stripePublishableKeyInput, setStripePublishableKeyInput] = useState(settings.stripePublishableKey || '');
+  const [savingStripePublishableKey, setSavingStripePublishableKey] = useState(false);
+  const [showSecret, setShowSecret] = useState(false);
+  const [showPublishable, setShowPublishable] = useState(false);
 
   const saveStripeKey = async () => {
     setSavingStripeKey(true);
@@ -85,13 +92,45 @@ export default function SettingsPage() {
         }, { onConflict: 'key', ignoreDuplicates: false });
       if (updateError) throw updateError;
       setSettings(prev => ({ ...prev, stripeSecretKey: stripeKeyInput }));
-      toast({ title: "Success", description: "Stripe nøgle gemt", className: "bg-green-500 text-white" });
+      toast({ title: "Success", description: "Stripe Secret Key gemt", className: "bg-green-500 text-white" });
     } catch (error) {
-      toast({ variant: "destructive", title: "Fejl", description: error instanceof Error ? error.message : 'Kunne ikke gemme Stripe nøgle' });
+      toast({ variant: "destructive", title: "Fejl", description: error instanceof Error ? error.message : 'Kunne ikke gemme Stripe Secret Key' });
     } finally {
       setSavingStripeKey(false);
     }
   };
+
+  const saveStripePublishableKey = async () => {
+    setSavingStripePublishableKey(true);
+    try {
+      const adminCheck = await fetch('/api/check-admin');
+      const { isAdmin, error } = await adminCheck.json();
+      if (!adminCheck.ok || error || !isAdmin) {
+        toast({
+          variant: "destructive",
+          title: "Fejl",
+          description: error || 'Du har ikke administrator rettigheder'
+        });
+        setSavingStripePublishableKey(false);
+        return;
+      }
+      const { error: updateError } = await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'stripe_publishable_key',
+          value: stripePublishableKeyInput,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'key', ignoreDuplicates: false });
+      if (updateError) throw updateError;
+      setSettings(prev => ({ ...prev, stripePublishableKey: stripePublishableKeyInput }));
+      toast({ title: "Success", description: "Stripe Publishable Key gemt", className: "bg-green-500 text-white" });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Fejl", description: error instanceof Error ? error.message : 'Kunne ikke gemme Stripe Publishable Key' });
+    } finally {
+      setSavingStripePublishableKey(false);
+    }
+  };
+
 
   const saveGridSettings = async (key: string, newValue: GridSettings) => {
     try {
@@ -203,34 +242,74 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
-          {/* Stripe API Key Sektion */}
+          {/* Stripe API Keys Sektion */}
           <Card>
             <CardHeader>
-              <CardTitle>Stripe API Key</CardTitle>
+              <CardTitle>Stripe API Keys</CardTitle>
               <CardDescription>
-                Indtast din Stripe Secret Key for at aktivere betalinger på platformen.<br />
+                Indtast både din Stripe Secret Key og Publishable Key for at aktivere betalinger på platformen.<br />
                 <span className="text-xs text-gray-400">(Gemmes sikkert i databasen)</span>
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Label htmlFor="stripe-key">Stripe Secret Key</Label>
-              <input
-                id="stripe-key"
-                type="password"
-                value={stripeKeyInput}
-                onChange={e => setStripeKeyInput(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-                placeholder="sk_live_..."
-                autoComplete="off"
-              />
-              <button
-                onClick={saveStripeKey}
-                disabled={savingStripeKey}
-                className="bg-primary text-white rounded px-4 py-2 disabled:opacity-50"
-              >
-                Gem Stripe nøgle
-              </button>
-              {settings.stripeSecretKey && <div className="text-xs text-green-600">Stripe-nøgle er gemt</div>}
+            <CardContent className="space-y-6">
+              <div>
+                <Label htmlFor="stripe-publishable-key">Stripe Publishable Key</Label>
+                <div className="flex gap-2">
+                  <input
+                    id="stripe-publishable-key"
+                    type={showPublishable ? "text" : "password"}
+                    value={stripePublishableKeyInput}
+                    onChange={e => setStripePublishableKeyInput(e.target.value)}
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="pk_live_..."
+                    autoComplete="off"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPublishable(v => !v)}
+                    className="px-3 py-2 border rounded text-xs"
+                  >
+                    {showPublishable ? "Skjul" : "Vis"}
+                  </button>
+                </div>
+                <button
+                  onClick={saveStripePublishableKey}
+                  disabled={savingStripePublishableKey}
+                  className="bg-primary text-white rounded px-4 py-2 mt-2 disabled:opacity-50"
+                >
+                  Gem Publishable Key
+                </button>
+                {settings.stripePublishableKey && <div className="text-xs text-green-600">Publishable Key er gemt</div>}
+              </div>
+              <div>
+                <Label htmlFor="stripe-key">Stripe Secret Key</Label>
+                <div className="flex gap-2">
+                  <input
+                    id="stripe-key"
+                    type={showSecret ? "text" : "password"}
+                    value={stripeKeyInput}
+                    onChange={e => setStripeKeyInput(e.target.value)}
+                    className="w-full border rounded px-3 py-2"
+                    placeholder="sk_live_..."
+                    autoComplete="off"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSecret(v => !v)}
+                    className="px-3 py-2 border rounded text-xs"
+                  >
+                    {showSecret ? "Skjul" : "Vis"}
+                  </button>
+                </div>
+                <button
+                  onClick={saveStripeKey}
+                  disabled={savingStripeKey}
+                  className="bg-primary text-white rounded px-4 py-2 mt-2 disabled:opacity-50"
+                >
+                  Gem Secret Key
+                </button>
+                {settings.stripeSecretKey && <div className="text-xs text-green-600">Secret Key er gemt</div>}
+              </div>
             </CardContent>
           </Card>
 

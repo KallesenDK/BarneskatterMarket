@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSupabase } from '@/components/SupabaseProvider';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import UserNavigation from './components/UserNavigation';
 
 export default function UserDashboardPage() {
   const { supabase } = useSupabase();
@@ -78,6 +79,8 @@ export default function UserDashboardPage() {
         <h1 className="text-2xl font-bold text-gray-900">Mit Dashboard</h1>
       </div>
 
+      
+      
       {/* Velkomst sektion */}
       <div className="bg-white rounded-lg shadow p-6 mb-8">
         <div className="flex justify-between items-start">
@@ -130,8 +133,12 @@ export default function UserDashboardPage() {
                 })()
               }
             </div>
-          </div>
-          <div className="flex gap-4">
+
+      
+                </div>
+
+      
+                <div className="flex gap-4">
             <Link
               href="/packages"
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#1AA49A] hover:bg-[#158F86] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1AA49A]"
@@ -145,54 +152,16 @@ export default function UserDashboardPage() {
               Køb mere plads
             </Link>
           </div>
-        </div>
-      </div>
 
-      {/* Navigation Tabs */}
-      <div className="border-b border-gray-200 mb-8">
-        <nav className="-mb-px flex space-x-8">
-          <Link
-            href="/dashboard/user"
-            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
-              pathname === '/dashboard/user'
-                ? 'border-[#BC1964] text-[#BC1964]'
-                : 'border-transparent text-gray-500 hover:text-[#1AA49A] hover:border-[#1AA49A]'
-            }`}
-          >
-            Oversigt
-          </Link>
-          <Link
-            href="/dashboard/user/products"
-            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
-              pathname === '/dashboard/user/products'
-                ? 'border-[#BC1964] text-[#BC1964]'
-                : 'border-transparent text-gray-500 hover:text-[#1AA49A] hover:border-[#1AA49A]'
-            }`}
-          >
-            Mine produkter
-          </Link>
-          <Link
-            href="/dashboard/user/create-product"
-            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
-              pathname === '/dashboard/user/create-product'
-                ? 'border-[#BC1964] text-[#BC1964]'
-                : 'border-transparent text-gray-500 hover:text-[#1AA49A] hover:border-[#1AA49A]'
-            }`}
-          >
-            Opret produkt
-          </Link>
-          <Link
-            href="/dashboard/user/messages"
-            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
-              pathname === '/dashboard/user/messages'
-                ? 'border-[#BC1964] text-[#BC1964]'
-                : 'border-transparent text-gray-500 hover:text-[#1AA49A] hover:border-[#1AA49A]'
-            }`}
-          >
-            Beskeder
-          </Link>
-        </nav>
-      </div>
+      
+              </div>
+
+      
+            </div>
+
+      
+      
+
 
       {/* Produkter sektion */}
       <div className="bg-white rounded-lg shadow p-6 mb-8">
@@ -206,6 +175,8 @@ export default function UserDashboardPage() {
           </Link>
         </div>
 
+      
+      
         {products.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-600 mb-4">Du har ingen produkter til salg.</p>
@@ -216,7 +187,9 @@ export default function UserDashboardPage() {
               Opret dit første produkt
             </Link>
           </div>
-        ) : (
+
+      
+              ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product: any) => (
               <div key={product.id} className="border rounded-lg p-4">
@@ -235,11 +208,19 @@ export default function UserDashboardPage() {
                     Rediger
                   </Link>
                 </div>
-              </div>
-            ))}
+
+      
+                    </div>
+
+      
+                  ))}
           </div>
-        )}
+
+      
+              )}
       </div>
-    </div>
+
+      
+          </div>
   );
 } 

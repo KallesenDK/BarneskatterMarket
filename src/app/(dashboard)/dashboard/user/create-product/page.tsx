@@ -234,11 +234,6 @@ export default function CreateProductPage() {
     } finally {
       setIsSubmitting(false);
     }
-      description: formData.description,
-      price: parseFloat(formData.price),
-      discount_price: null,
-      discount_active: false,
-      images: uploadedImageUrls,
       tags: tagArray,
       category: formData.category,
       expires_at: expiresAt.toISOString(),

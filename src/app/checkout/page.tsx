@@ -130,23 +130,38 @@ function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPackage && !selectedSlot) return;
-    
     setIsProcessing(true);
     setError(null);
-
     try {
-      // Simuler en betalingsprocess
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Her ville du normalt sende ordren til din backend
-      
-      setSuccess(true);
-    } catch (error) {
-      setError('Der opstod en fejl under behandling af din betaling');
+      // Udvælg Stripe priceId
+      const priceId = selectedPackage?.stripe_price_id || selectedSlot?.stripe_price_id;
+      if (!priceId) throw new Error('Stripe priceId mangler');
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceId,
+          email: formData.email,
+          name: formData.name,
+          address: formData.address,
+          city: formData.city,
+          postalCode: formData.postalCode,
+          phone: formData.phone,
+          successUrl: window.location.origin + '/checkout/success',
+          cancelUrl: window.location.origin + '/checkout/cancel',
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || 'Stripe Checkout fejl');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Der opstod en fejl under betaling');
     } finally {
       setIsProcessing(false);
     }
-
   };
 
   if (success) {
@@ -353,44 +368,7 @@ function CheckoutPage() {
                 />
               </div>
 
-              <div className="border-t pt-4">
-                <h3 className="text-lg font-medium mb-4">Kort oplysninger</h3>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Kortnummer</label>
-                  <input
-                    type="text"
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
-                    value={formData.cardNumber}
-                    onChange={(e) => setFormData(prev => ({ ...prev, cardNumber: e.target.value }))}
-                  />
-                </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Udløbsdato</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="MM/YY"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
-                      value={formData.cardExpiry}
-                      onChange={(e) => setFormData(prev => ({ ...prev, cardExpiry: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">CVC</label>
-                    <input
-                      type="text"
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
-                      value={formData.cardCvc}
-                      onChange={(e) => setFormData(prev => ({ ...prev, cardCvc: e.target.value }))}
-                    />
-                  </div>
-                </div>
-              </div>
 
               <button
                 type="submit"

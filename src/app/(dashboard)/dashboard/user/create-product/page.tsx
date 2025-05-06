@@ -195,29 +195,23 @@ export default function CreateProductPage() {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 14);
       
-      const uploadedImageUrls = [];
-      
+      const uploadedImageUrls: string[] = [];
       for (const file of images) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
         const filePath = `products/${userId}/${fileName}`;
-        
-        const { error: uploadError, data } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('product-images')
           .upload(filePath, file);
-        
         if (uploadError) {
           throw new Error(`Billedupload fejlede: ${uploadError.message}`);
         }
-        
         const { data: { publicUrl } } = supabase.storage
           .from('product-images')
           .getPublicUrl(filePath);
-        
         uploadedImageUrls.push(publicUrl);
       }
-      
-      const { error: productError, data: productData } = await supabase
+      const { error: productError } = await supabase
         .from('products')
         .insert({
           title: formData.title,
@@ -231,30 +225,25 @@ export default function CreateProductPage() {
           expires_at: expiresAt.toISOString(),
           user_id: userId
         });
-
       if (productError) {
         throw new Error(`Produkt oprettelse fejlede: ${productError.message}`);
       }
-
-      // Opdater brugerens produktpladser
-      const { error: updateError } = await supabase
-        .from('subscriptions')
-        .update({
-          used_slots: productLimits.usedProducts + 1,
-          available_slots: productLimits.availableProducts - 1
-        })
-        .eq('user_id', userId);
-
-      if (updateError) {
-        throw new Error(`Opdatering af produktpladser fejlede: ${updateError.message}`);
-      }
-
       router.push('/dashboard/user/products');
     } catch (err: any) {
       setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
+      description: formData.description,
+      price: parseFloat(formData.price),
+      discount_price: null,
+      discount_active: false,
+      images: uploadedImageUrls,
+      tags: tagArray,
+      category: formData.category,
+      expires_at: expiresAt.toISOString(),
+      user_id: userId
+    });
   };
 
   return (

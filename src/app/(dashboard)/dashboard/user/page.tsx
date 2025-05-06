@@ -188,25 +188,43 @@ export default function UserDashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product: any) => (
-              <div key={product.id} className="border rounded-lg p-4">
-                <h3 className="font-medium mb-2">{product.title}</h3>
-                <p className="text-gray-600 mb-2">{product.price} kr.</p>
-                <div className="flex justify-between items-center">
-                  <span className={`px-2 py-1 rounded text-sm ${
-                    product.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {product.status === 'active' ? 'Aktiv' : 'Kladde'}
-                  </span>
-                  <Link
-                    href={`/dashboard/user/products/${product.id}`}
-                    className="text-[#1AA49A] hover:underline"
-                  >
-                    Rediger
-                  </Link>
+            {products.map((product: any) => {
+              // Find første billede, hvis det findes (ellers vis placeholder)
+              const imageUrl = Array.isArray(product.images) && product.images.length > 0 ? product.images[0] : '/no-image.svg';
+              return (
+                <div
+                  key={product.id}
+                  className="bg-gradient-to-br from-white via-gray-50 to-gray-100 border border-gray-200 rounded-2xl shadow hover:shadow-lg transition-shadow min-h-[320px] flex flex-col p-5 group"
+                >
+                  <div className="flex justify-center mb-4">
+                    <img
+                      src={imageUrl}
+                      alt={product.title}
+                      className="h-36 w-36 object-cover rounded-xl border border-gray-100 shadow-sm bg-white group-hover:scale-105 transition-transform duration-200"
+                      onError={e => { (e.target as HTMLImageElement).src = '/no-image.svg'; }}
+                    />
+                  </div>
+                  <h3 className="font-semibold text-lg text-gray-900 mb-1 truncate text-center">{product.title}</h3>
+                  <p className="text-[#BC1964] font-bold text-xl text-center mb-2">{product.price} kr.</p>
+                  <div className="flex-1" />
+                  <div className="flex items-center justify-between mt-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
+                      product.status === 'active'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {product.status === 'active' ? 'Aktiv' : 'Kladde'}
+                    </span>
+                    <Link
+                      href={`/dashboard/user/products/${product.id}`}
+                      className="inline-block bg-[#1AA49A] text-white px-3 py-1 rounded-lg font-medium shadow hover:bg-[#158F86] transition-colors text-xs"
+                    >
+                      Rediger
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

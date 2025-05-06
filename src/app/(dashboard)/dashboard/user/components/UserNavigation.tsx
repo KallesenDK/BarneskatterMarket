@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 const navigation = [
   { name: 'Oversigt', href: '/dashboard/user' },
   { name: 'Mine Produkter', href: '/dashboard/user/products' },
-  { name: 'Opret Produkt', href: '/dashboard/user/products/create' },
+  { name: 'Opret Produkt', href: '/dashboard/user/create-product' },
   { name: 'Mine Ordrer', href: '/dashboard/user/orders' },
   { name: 'Beskeder', href: '/dashboard/user/messages' },
   { name: 'Indstillinger', href: '/dashboard/user/settings' },

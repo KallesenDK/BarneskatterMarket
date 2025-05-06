@@ -42,17 +42,28 @@ export default function CreateProductPage() {
           .eq('id', user.id)
           .single();
 
+        // Hent brugerens aktive abonnement (fx is_active=true eller nyeste)
         const { data: subscriptionData } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('user_id', user.id)
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1)
           .single();
 
+        // Hent antal produkter brugeren har oprettet
+        const { count: productCount } = await supabase
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
         if (profileData && subscriptionData) {
+          const productLimit = subscriptionData.total_slots || 0;
           setProductLimits({
-            productLimit: subscriptionData.total_slots || 0,
-            usedProducts: subscriptionData.used_slots || 0,
-            availableProducts: subscriptionData.available_slots || 0,
+            productLimit,
+            usedProducts: productCount || 0,
+            availableProducts: productLimit - (productCount || 0),
             maxAnnonceWeeks: subscriptionData.max_weeks || 2
           });
         }

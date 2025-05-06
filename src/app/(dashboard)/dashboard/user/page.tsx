@@ -152,16 +152,9 @@ export default function UserDashboardPage() {
               Køb mere plads
             </Link>
           </div>
+        </div>
 
-      
-              </div>
-
-      
-            </div>
-
-      
-      
-
+      <UserNavigation />
 
       {/* Produkter sektion */}
       <div className="bg-white rounded-lg shadow p-6 mb-8">

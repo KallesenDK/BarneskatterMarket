@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import ShoppingCart from './ShoppingCart';
 
@@ -24,8 +24,23 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('cart-items');
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return [];
+  });
   const [isOpen, setIsOpen] = useState(false);
+
+  // Gem items i localStorage ved ændringer
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cart-items', JSON.stringify(items));
+    }
+  }, [items]);
 
   const addItem = (newItem: Omit<CartItem, 'quantity'>) => {
     setItems(currentItems => {

@@ -234,11 +234,6 @@ export default function CreateProductPage() {
     } finally {
       setIsSubmitting(false);
     }
-      tags: tagArray,
-      category: formData.category,
-      expires_at: expiresAt.toISOString(),
-      user_id: userId
-    });
   };
 
   return (

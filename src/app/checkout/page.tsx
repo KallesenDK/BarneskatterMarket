@@ -17,6 +17,7 @@ interface SubscriptionPackage {
   product_limit: number;
   price: number;
   is_active: boolean;
+  stripe_price_id: string; // <-- Stripe Price ID
 }
 
 
@@ -27,6 +28,7 @@ interface ProductSlot {
   slot_count: number;
   price: number;
   is_active: boolean;
+  stripe_price_id: string; // <-- Stripe Price ID
 }
 
 function CheckoutPage() {

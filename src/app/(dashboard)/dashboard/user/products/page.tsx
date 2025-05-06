@@ -20,6 +20,7 @@ type Product = {
   featured: boolean;
   category_name: string;
   image_url: string | null;
+  images: string[]; // Added for thumbnail and gallery support
 };
 
 export default function ProductsPage() {

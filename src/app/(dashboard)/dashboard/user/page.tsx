@@ -155,7 +155,7 @@ export default function UserDashboardPage() {
         </div>
       </div>
 
-      <UserNavigation />
+      
 
       {/* Produkter sektion */}
       <div className="bg-white rounded-lg shadow p-6 mb-8">

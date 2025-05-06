@@ -50,7 +50,28 @@ export default function CreateProductPage() {
           .eq('is_active', true)
           .order('created_at', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
+
+        // Hent evt. tilknyttet plan (pakke)
+        let planData = null;
+        if (subscriptionData?.plan_id) {
+          const { data } = await supabase
+            .from('subscription_packages')
+            .select('*')
+            .eq('id', subscriptionData.plan_id)
+            .single();
+          planData = data;
+        }
+
+        // Hent ekstra produktpladser fra user_product_slots
+        let extraSlots = 0;
+        const { data: userSlotsData } = await supabase
+          .from('user_product_slots')
+          .select('slots')
+          .eq('user_id', user.id);
+        if (userSlotsData && Array.isArray(userSlotsData)) {
+          extraSlots = userSlotsData.reduce((sum, row) => sum + (row.slots || 0), 0);
+        }
 
         // Hent antal produkter brugeren har oprettet
         const { count: productCount } = await supabase
@@ -58,15 +79,16 @@ export default function CreateProductPage() {
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
 
-        if (profileData && subscriptionData) {
-          const productLimit = subscriptionData.total_slots || 0;
-          setProductLimits({
-            productLimit,
-            usedProducts: productCount || 0,
-            availableProducts: productLimit - (productCount || 0),
-            maxAnnonceWeeks: subscriptionData.max_weeks || 2
-          });
-        }
+        // Udregn slots præcis som på dashboard
+        const baseSlots = planData?.product_limit ?? subscriptionData?.total_slots ?? 0;
+        const totalSlots = baseSlots + extraSlots;
+        setProductLimits({
+          productLimit: totalSlots,
+          usedProducts: productCount || 0,
+          availableProducts: Math.max(totalSlots - (productCount || 0), 0),
+          maxAnnonceWeeks: planData?.max_weeks || subscriptionData?.max_weeks || 2
+        });
+      
 
         // Hent kategorier
         const { data: categoriesData } = await supabase

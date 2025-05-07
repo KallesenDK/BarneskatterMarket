@@ -8,7 +8,7 @@ import { formatMoney, formatRelativeDate } from '@/lib/utils';
 import { PhotoIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Toast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 
 type Product = {
   id: string;
@@ -32,23 +32,18 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [notifications, setNotifications] = useState<Array<{ id: string, message: string, type: 'success' | 'error' }>>([]);
+  const { toast } = useToast();
   
   const justCreated = searchParams.get('created') === 'true';
   
   useEffect(() => {
     if (justCreated) {
-      addNotification('Dit produkt er blevet oprettet!', 'success');
+      toast({
+        title: 'Dit produkt er blevet oprettet!',
+        variant: 'success',
+      });
     }
-  }, [justCreated]);
-
-  const addNotification = (message: string, type: 'success' | 'error') => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setNotifications(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 5000);
-  };
+  }, [justCreated, toast]);
 
   useEffect(() => {
     const getUserSession = async () => {
@@ -104,10 +99,17 @@ export default function ProductsPage() {
 
       setProducts(products.filter(p => !selectedProducts.includes(p.id)));
       setSelectedProducts([]);
-      addNotification('De valgte produkter er blevet slettet', 'success');
+      toast({
+        title: 'De valgte produkter er blevet slettet',
+        variant: 'success',
+      });
     } catch (error) {
       console.error('Fejl ved sletning af produkter:', error);
-      addNotification('Der opstod en fejl ved sletning af produkterne', 'error');
+      toast({
+        title: 'Fejl ved sletning af produkter',
+        description: 'Der opstod en fejl ved sletning af produkterne',
+        variant: 'destructive',
+      });
     }
   };
 

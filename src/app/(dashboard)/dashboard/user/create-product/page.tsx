@@ -211,24 +211,27 @@ export default function CreateProductPage() {
           .getPublicUrl(filePath);
         uploadedImageUrls.push(publicUrl);
       }
-      const { error: productError } = await supabase
-        .from('products')
-        .insert({
-          title: formData.title,
-          description: formData.description,
-          price: parseFloat(formData.price),
-          discount_price: null,
-          discount_active: false,
-          images: uploadedImageUrls,
-          tags: tagArray,
-          category: formData.category,
-          expires_at: expiresAt.toISOString(),
-          user_id: userId
-        });
-      if (productError) {
-        throw new Error(`Produkt oprettelse fejlede: ${productError.message}`);
-      }
-      router.push('/dashboard/user/products');
+      const response = await fetch('/api/create-product', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: formData.title,
+    description: formData.description,
+    price: parseFloat(formData.price),
+    discount_price: null,
+    discount_active: false,
+    images: uploadedImageUrls,
+    tags: tagArray,
+    category: formData.category,
+    expires_at: expiresAt.toISOString(),
+    user_id: userId
+  }),
+});
+const data = await response.json();
+if (!data.success) {
+  throw new Error(data.error || 'Produkt oprettelse fejlede');
+}
+router.push('/dashboard/user/products');
     } catch (err: any) {
       setError(err.message);
     } finally {

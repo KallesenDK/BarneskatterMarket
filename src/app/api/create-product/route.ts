@@ -10,9 +10,9 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, description, price, ...rest } = await req.json();
+    const { title, description, price, ...rest } = await req.json();
     // 1. Opret produkt i Stripe
-    const product = await stripe.products.create({ name, description });
+    const product = await stripe.products.create({ name: title, description });
     // 2. Opret pris i Stripe
     const stripePrice = await stripe.prices.create({
       unit_amount: Math.round(price * 100),
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       .from('products')
       .insert([
         {
-          name,
+          title,
           description,
           price,
           stripe_product_id: product.id,

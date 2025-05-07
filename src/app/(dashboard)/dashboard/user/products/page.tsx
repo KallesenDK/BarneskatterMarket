@@ -80,7 +80,11 @@ export default function ProductsPage() {
         setProducts(data || []);
       } catch (error) {
         console.error('Fejl ved hentning af produkter:', error);
-        addNotification('Der opstod en fejl ved hentning af dine produkter', 'error');
+        toast({
+  title: 'Fejl ved hentning af produkter',
+  description: 'Der opstod en fejl ved hentning af dine produkter',
+  variant: 'destructive',
+});
       } finally {
         setLoading(false);
       }

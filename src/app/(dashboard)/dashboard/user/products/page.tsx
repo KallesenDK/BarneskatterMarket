@@ -225,14 +225,7 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {notifications.map(notification => (
-        <Toast
-          key={notification.id}
-          variant={notification.type === 'error' ? 'destructive' : 'default'}
-        >
-          {notification.message}
-        </Toast>
-      ))}
+      
 
       {selectedProducts.length > 0 && (
         <div className="mb-4 p-4 bg-white rounded-lg shadow-sm flex justify-between items-center">

@@ -54,7 +54,11 @@ export default function ProductsPage() {
         }
       } catch (error) {
         console.error('Fejl ved hentning af bruger:', error);
-        addNotification('Kunne ikke hente brugeroplysninger. Prøv at genindlæse siden.', 'error');
+        toast({
+  title: 'Kunne ikke hente brugeroplysninger',
+  description: 'Prøv at genindlæse siden.',
+  variant: 'destructive',
+});
       }
     };
     

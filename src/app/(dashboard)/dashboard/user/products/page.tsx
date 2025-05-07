@@ -40,7 +40,7 @@ export default function ProductsPage() {
     if (justCreated) {
       toast({
         title: 'Dit produkt er blevet oprettet!',
-        variant: 'success',
+        variant: 'default',
       });
     }
   }, [justCreated, toast]);
@@ -101,7 +101,7 @@ export default function ProductsPage() {
       setSelectedProducts([]);
       toast({
         title: 'De valgte produkter er blevet slettet',
-        variant: 'success',
+        variant: 'default',
       });
     } catch (error) {
       console.error('Fejl ved sletning af produkter:', error);

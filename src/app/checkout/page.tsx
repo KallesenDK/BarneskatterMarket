@@ -372,6 +372,11 @@ function CheckoutPage() {
 
 
 
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-2">
+                  {error}
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={isProcessing}

@@ -21,6 +21,10 @@ export async function POST(req: NextRequest) {
       success_url: `${body.successUrl || 'https://your-domain.dk/success'}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: body.cancelUrl || 'https://your-domain.dk/cancel',
       customer_email: body.email,
+      metadata: {
+        ...(body.metadata || {}),
+        subscription_package_id: body.packageId || '',
+      },
     });
     return NextResponse.json({ url: session.url });
   } catch (error: any) {

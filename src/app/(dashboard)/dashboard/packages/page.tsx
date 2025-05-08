@@ -150,7 +150,7 @@ export default function PackagesPage() {
         discount_price: '',
         discount_start_date: '',
         discount_end_date: '',
-        max_quantity: '',
+        max_quantity: '', // Always include max_quantity
       })
       setEditingPackage(null)
       setIsOpen(false)
@@ -182,7 +182,7 @@ export default function PackagesPage() {
     setEditingPackage(pkg)
     setFormData({
       name: pkg.name,
-      description: pkg.description,
+      description: pkg.description ?? '',
       duration_weeks: pkg.duration_weeks.toString(),
       product_limit: pkg.product_limit.toString(),
       price: pkg.price.toString(),

@@ -227,7 +227,8 @@ export default function PackagesPage() {
                   is_popular: false,
                   discount_price: '',
                   discount_start_date: '',
-                  discount_end_date: ''
+                  discount_end_date: '',
+                  max_quantity: '',
                 })
               }}
             >

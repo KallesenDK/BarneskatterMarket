@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
+console.log('STRIPE_SECRET_KEY:', process.env.STRIPE_SECRET_KEY ? 'FOUND' : 'MISSING');
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -12,15 +13,25 @@ export async function POST(req: NextRequest) {
   const { name, description, price, duration_weeks, product_limit, ...rest } = await req.json();
   try {
     // 1. Opret produkt i Stripe
-    const product = await stripe.products.create({ name, description });
-
-    // 2. Opret pris i Stripe
-    const stripePrice = await stripe.prices.create({
-      unit_amount: Math.round(price * 100),
-      currency: 'dkk',
-      product: product.id,
-    });
-
+    let product, stripePrice;
+    try {
+      product = await stripe.products.create({ name, description });
+      console.log('Stripe product created:', product.id);
+    } catch (err) {
+      console.error('Fejl ved oprettelse af Stripe produkt:', err);
+      throw err;
+    }
+    try {
+      stripePrice = await stripe.prices.create({
+        unit_amount: Math.round(price * 100),
+        currency: 'dkk',
+        product: product.id,
+      });
+      console.log('Stripe price created:', stripePrice.id);
+    } catch (err) {
+      console.error('Fejl ved oprettelse af Stripe pris:', err);
+      throw err;
+    }
     // 3. Gem i Supabase
     const { data, error } = await supabase
       .from('subscription_packages')

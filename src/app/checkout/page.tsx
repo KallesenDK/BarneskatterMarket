@@ -130,9 +130,14 @@ function CheckoutPage() {
   }, [searchParams, supabase, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
+  console.log('handleSubmit CALLED');
+  console.log('selectedPackage:', selectedPackage);
+  console.log('selectedSlot:', selectedSlot);
+  console.log('isProcessing before submit:', isProcessing);
     e.preventDefault();
     if (!selectedPackage && !selectedSlot) return;
-    setIsProcessing(true);
+    console.log('setIsProcessing(true)');
+  setIsProcessing(true);
     setError(null);
     try {
       // Udvælg Stripe priceId
@@ -162,7 +167,8 @@ function CheckoutPage() {
     } catch (error: any) {
       setError(error.message || 'Der opstod en fejl under betaling');
     } finally {
-      setIsProcessing(false);
+      console.log('setIsProcessing(false)');
+    setIsProcessing(false);
     }
   };
 
@@ -381,6 +387,11 @@ function CheckoutPage() {
                 type="submit"
                 disabled={isProcessing}
                 className="w-full bg-[#1AA49A] text-white py-3 px-4 rounded-md hover:bg-[#158C84] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1AA49A] disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => {
+                  console.log('CLICK: isProcessing', isProcessing);
+                  console.log('selectedPackage', selectedPackage);
+                  console.log('selectedSlot', selectedSlot);
+                }}
               >
                 {isProcessing ? (
                   <span className="flex items-center justify-center">

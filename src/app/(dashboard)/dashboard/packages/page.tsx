@@ -120,11 +120,14 @@ export default function PackagesPage() {
         await fetch('/packages', { method: 'GET', cache: 'reload' });
       } else {
         // Opret ny pakke
-        const { error } = await supabase
-          .from('subscription_packages')
-          .insert([packageData])
-
-        if (error) throw error
+        // Opret via API, så Stripe produkt også laves
+        const res = await fetch('/api/create-subscription-package', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(packageData),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Fejl ved oprettelse af abonnementspakke')
 
         // Hvis denne pakke er sat som populær, fjern populær status fra andre pakker
         if (packageData.is_popular) {

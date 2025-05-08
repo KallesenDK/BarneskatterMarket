@@ -101,6 +101,8 @@ export type SubscriptionPackage = {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  max_quantity?: number | null;
+  sold_quantity?: number;
 };
 
 export type ProductSlot = {

@@ -10,7 +10,7 @@ const supabase = createClient(
 );
 
 export async function POST(req: NextRequest) {
-  const { name, description, price, duration_weeks, product_limit, ...rest } = await req.json();
+  const { name, description, price, duration_weeks, product_limit, max_quantity, ...rest } = await req.json();
   try {
     // 1. Opret produkt i Stripe
     let product, stripePrice;
@@ -32,6 +32,21 @@ export async function POST(req: NextRequest) {
       console.error('Fejl ved oprettelse af Stripe pris:', err);
       throw err;
     }
+    // 2. Hvis pakken har max_quantity, tjek om den er udsolgt
+    if (typeof max_quantity === 'number' && max_quantity > 0) {
+      // Find eksisterende pakke med samme navn (eller ID hvis du bruger det)
+      const { data: existing } = await supabase
+        .from('subscription_packages')
+        .select('id, sold_quantity, max_quantity')
+        .eq('name', name)
+        .maybeSingle();
+      if (existing && typeof existing.sold_quantity === 'number' && typeof existing.max_quantity === 'number') {
+        if (existing.sold_quantity >= existing.max_quantity) {
+          return NextResponse.json({ error: 'Denne pakke er udsolgt.' }, { status: 400 });
+        }
+      }
+    }
+
     // 3. Gem i Supabase
     const { data, error } = await supabase
       .from('subscription_packages')
@@ -42,6 +57,8 @@ export async function POST(req: NextRequest) {
           price,
           duration_weeks,
           product_limit,
+          max_quantity: typeof max_quantity === 'number' ? max_quantity : null,
+          sold_quantity: 0,
           stripe_product_id: product.id,
           stripe_price_id: stripePrice.id,
           ...rest,

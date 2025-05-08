@@ -13,17 +13,19 @@ import {
 import { Button } from '@/components/ui/button'
 
 interface SubscriptionPackage {
-  id: string
-  name: string
-  description: string
-  duration_weeks: number
-  product_limit: number
-  price: number
-  is_active: boolean
-  is_popular?: boolean
-  discount_price?: number | null
-  discount_start_date?: string | null
-  discount_end_date?: string | null
+  id: string;
+  name: string;
+  description: string | null;
+  duration_weeks: number;
+  product_limit: number;
+  price: number;
+  is_active: boolean;
+  is_popular?: boolean;
+  discount_price?: number | null;
+  discount_start_date?: string | null;
+  discount_end_date?: string | null;
+  max_quantity?: number | null;
+  sold_quantity?: number;
 }
 
 interface SubscriptionPackageCardProps {
@@ -50,6 +52,13 @@ export function SubscriptionPackageCard({ package: pkg }: SubscriptionPackageCar
 
   const discountPercentage = calculateDiscount()
 
+  // Udsolgt? (kun hvis max_quantity sat)
+  const isSoldOut =
+    typeof pkg.max_quantity === 'number' &&
+    pkg.max_quantity > 0 &&
+    typeof pkg.sold_quantity === 'number' &&
+    pkg.sold_quantity >= pkg.max_quantity;
+
   return (
     <Card className={`relative overflow-hidden transition-all duration-300 hover:scale-105 ${
       pkg.is_popular ? 'border-[#1AA49A] shadow-lg' : 'hover:shadow-lg'
@@ -69,7 +78,16 @@ export function SubscriptionPackageCard({ package: pkg }: SubscriptionPackageCar
           </div>
         </div>
       )}
-      
+      {/* VIS "X ud af Y tilbage" hvis max_quantity er sat */}
+      {typeof pkg.max_quantity === 'number' && pkg.max_quantity > 0 && (
+        <div className="absolute bottom-2 left-2 z-10">
+          <span className={`text-xs px-2 py-1 rounded-full ${isSoldOut ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'}`}>
+            {isSoldOut
+              ? 'Udsolgt'
+              : `${pkg.max_quantity - (pkg.sold_quantity || 0)} ud af ${pkg.max_quantity} tilbage`}
+          </span>
+        </div>
+      )}
       <CardHeader>
         <CardTitle className="text-2xl font-bold">{pkg.name}</CardTitle>
         <CardDescription className="text-gray-600 mt-2">
@@ -125,8 +143,9 @@ export function SubscriptionPackageCard({ package: pkg }: SubscriptionPackageCar
         <Button 
           className="w-full bg-gradient-to-r from-[#1AA49A] to-[#158C84] hover:from-[#158C84] hover:to-[#1AA49A] text-white transition-all duration-300"
           onClick={handleSelect}
+          disabled={isSoldOut}
         >
-          Køb pakke
+          {isSoldOut ? 'Udsolgt' : 'Køb pakke'}
         </Button>
       </CardFooter>
     </Card>

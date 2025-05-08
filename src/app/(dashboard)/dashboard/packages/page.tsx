@@ -16,19 +16,21 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
 interface SubscriptionPackage {
-  id: string
-  name: string
-  description: string
-  duration_weeks: number
-  product_limit: number
-  price: number
-  is_active: boolean
-  is_popular: boolean
-  discount_price: number | null
-  discount_start_date: string | null
-  discount_end_date: string | null
-  created_at: string
-  updated_at: string
+  id: string;
+  name: string;
+  description: string | null;
+  duration_weeks: number;
+  product_limit: number;
+  price: number;
+  is_active: boolean;
+  is_popular: boolean;
+  discount_price: number | null;
+  discount_start_date: string | null;
+  discount_end_date: string | null;
+  created_at: string;
+  updated_at: string;
+  max_quantity?: number | null;
+  sold_quantity?: number;
 }
 
 export default function PackagesPage() {
@@ -47,7 +49,8 @@ export default function PackagesPage() {
     is_popular: false,
     discount_price: '',
     discount_start_date: '',
-    discount_end_date: ''
+    discount_end_date: '',
+    max_quantity: '', // Ny: antal tilgængelige
   })
 
   // Hent pakker
@@ -87,20 +90,26 @@ export default function PackagesPage() {
         discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
         discount_start_date: formData.discount_start_date || null,
         discount_end_date: formData.discount_end_date || null,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        max_quantity: formData.max_quantity ? parseInt(formData.max_quantity) : null,
       }
 
       if (editingPackage) {
         // Opdater eksisterende pakke
-        const { error } = await supabase
-          .from('subscription_packages')
-          .update(packageData)
-          .eq('id', editingPackage.id)
+        // Opdater kun hvis id er gyldigt
+        if (editingPackage && editingPackage.id) {
+          const { error } = await supabase
+            .from('subscription_packages')
+            .update(packageData)
+            .eq('id', editingPackage.id)
 
-        if (error) throw error
+          if (error) throw error
+        } else {
+          throw new Error('Ugyldigt id til opdatering af abonnementspakke.');
+        }
 
         // Hvis denne pakke er sat som populær, fjern populær status fra andre pakker
-        if (packageData.is_popular) {
+        if (packageData.is_popular && editingPackage && editingPackage.id) {
           await supabase
             .from('subscription_packages')
             .update({ is_popular: false })
@@ -140,7 +149,8 @@ export default function PackagesPage() {
         is_popular: false,
         discount_price: '',
         discount_start_date: '',
-        discount_end_date: ''
+        discount_end_date: '',
+        max_quantity: '',
       })
       setEditingPackage(null)
       setIsOpen(false)
@@ -180,7 +190,8 @@ export default function PackagesPage() {
       is_popular: pkg.is_popular,
       discount_price: pkg.discount_price?.toString() || '',
       discount_start_date: pkg.discount_start_date || '',
-      discount_end_date: pkg.discount_end_date || ''
+      discount_end_date: pkg.discount_end_date || '',
+      max_quantity: pkg.max_quantity !== undefined && pkg.max_quantity !== null ? pkg.max_quantity.toString() : '',
     })
     setIsOpen(true)
   }
@@ -283,6 +294,17 @@ export default function PackagesPage() {
                     value={formData.price}
                     onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                     required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="max_quantity">Antal tilgængelige (valgfrit)</Label>
+                  <Input
+                    id="max_quantity"
+                    type="number"
+                    min="1"
+                    value={formData.max_quantity}
+                    onChange={(e) => setFormData(prev => ({ ...prev, max_quantity: e.target.value }))}
+                    placeholder="Fx 100 for først-til-mølle, tom for uendelig"
                   />
                 </div>
                 <div>

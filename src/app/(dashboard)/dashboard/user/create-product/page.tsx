@@ -231,6 +231,7 @@ const data = await response.json();
 if (!data.success) {
   throw new Error(data.error || 'Produkt oprettelse fejlede');
 }
+// Success! Stripe produkt og price ID er nu automatisk gemt i din db
 router.push('/dashboard/user/products');
     } catch (err: any) {
       setError(err.message);

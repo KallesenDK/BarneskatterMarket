@@ -61,7 +61,7 @@ export default function ProductsPage() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('id, title, price, images, image_url, stripe_price_id, status, created_at, expires_at, featured, category_name')
+          .select('id, title, price, images, image_url, stripe_product_id, stripe_price_id, status, created_at, expires_at, featured, category_name')
           .eq('user_id', userId)
           .order('created_at', { ascending: false });
 

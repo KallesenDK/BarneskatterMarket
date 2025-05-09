@@ -9,14 +9,17 @@ const supabase = createClient(
 );
 
 export async function POST(req: NextRequest) {
+  console.log('API HIT: create-subscription-package');
   const { name, description, price, duration_weeks, product_limit, max_quantity, ...rest } = await req.json();
   try {
     // 1. Opret produkt i Stripe
     let product, stripePrice;
     try {
       product = await stripe.products.create({ name, description });
-    } catch (err) {
-      return NextResponse.json({ error: 'Fejl ved oprettelse af Stripe produkt' }, { status: 500 });
+      console.log('Stripe product:', product);
+    } catch (err: any) {
+      console.error('Stripe product error:', err);
+      return NextResponse.json({ error: 'Fejl ved oprettelse af Stripe produkt', details: err.message }, { status: 500 });
     }
     try {
       stripePrice = await stripe.prices.create({
@@ -24,8 +27,10 @@ export async function POST(req: NextRequest) {
         currency: 'dkk',
         product: product.id,
       });
-    } catch (err) {
-      return NextResponse.json({ error: 'Fejl ved oprettelse af Stripe pris' }, { status: 500 });
+      console.log('Stripe price:', stripePrice);
+    } catch (err: any) {
+      console.error('Stripe price error:', err);
+      return NextResponse.json({ error: 'Fejl ved oprettelse af Stripe pris', details: err.message }, { status: 500 });
     }
     // 2. Tjek limit hvis nødvendigt
     if (typeof max_quantity === 'number' && max_quantity > 0) {

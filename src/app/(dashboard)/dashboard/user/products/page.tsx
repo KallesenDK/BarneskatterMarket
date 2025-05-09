@@ -73,11 +73,12 @@ export default function ProductsPage() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('*, stripe_price_id')
+          .select('*')
           .eq('user_id', userId)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
+        console.log('Fetched products:', data);
         setProducts(data || []);
       } catch (error) {
         console.error('Fejl ved hentning af produkter:', error);
@@ -346,8 +347,11 @@ export default function ProductsPage() {
                     Rediger
                   </Link>
                   <Link
-                    href={`/checkout?items=${encodeURIComponent(JSON.stringify([{ id: product.id, title: product.title, price: product.price, image: product.images?.[0] || product.image_url, stripe_price_id: product.stripe_price_id }]))}`}
-                    className="ml-4 text-white bg-[#1AA49A] hover:bg-[#158F86] px-3 py-1 rounded"
+                    href={product.stripe_price_id ? `/checkout?items=${encodeURIComponent(JSON.stringify([{ id: product.id, title: product.title, price: product.price, image: product.images?.[0] || product.image_url, stripe_price_id: product.stripe_price_id }]))}` : '#'}
+                    className={`ml-4 text-white px-3 py-1 rounded ${product.stripe_price_id ? 'bg-[#1AA49A] hover:bg-[#158F86]' : 'bg-gray-400 cursor-not-allowed'}`}
+                    title={product.stripe_price_id ? '' : 'Dette produkt mangler Stripe price og kan ikke købes'}
+                    aria-disabled={!product.stripe_price_id}
+                    tabIndex={product.stripe_price_id ? 0 : -1}
                   >
                     Køb
                   </Link>

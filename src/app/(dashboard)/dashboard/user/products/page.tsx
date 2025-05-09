@@ -93,7 +93,7 @@ export default function ProductsPage() {
           status: item.status || '',
           featured: !!item.featured,
           category_name: item.category_name || '',
-        })) as Product[];
+        })) as Product[]
 
       } catch (error) {
         console.error('Fejl ved hentning af produkter:', error);

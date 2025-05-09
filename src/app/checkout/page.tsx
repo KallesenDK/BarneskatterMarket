@@ -96,6 +96,7 @@ function CheckoutPage() {
   }, [cartItems, supabase, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log('FORM SUBMIT CALLED'); // Debug!
     e.preventDefault();
     if (isProcessing) return;
     setIsProcessing(true);
@@ -117,6 +118,9 @@ function CheckoutPage() {
         setIsProcessing(false);
         return;
       }
+      console.log('cartItems:', cartItems);
+      console.log('stripeCartItems:', stripeCartItems);
+      console.log('formData:', formData);
       const res = await fetch('/api/create-cart-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,6 +139,7 @@ function CheckoutPage() {
         }),
       });
       const data = await res.json();
+      console.log('Stripe response:', data);
       if (data.url) {
         window.location.href = data.url;
       } else {
@@ -259,7 +264,6 @@ function CheckoutPage() {
                 <label className="block text-sm font-medium text-gray-700">Email</label>
                 <input
                   type="email"
-                  required
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
@@ -270,7 +274,6 @@ function CheckoutPage() {
                 <label className="block text-sm font-medium text-gray-700">Navn</label>
                 <input
                   type="text"
-                  required
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
@@ -281,7 +284,6 @@ function CheckoutPage() {
                 <label className="block text-sm font-medium text-gray-700">Adresse</label>
                 <input
                   type="text"
-                  required
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
                   value={formData.address}
                   onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
@@ -293,7 +295,6 @@ function CheckoutPage() {
                   <label className="block text-sm font-medium text-gray-700">By</label>
                   <input
                     type="text"
-                    required
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
                     value={formData.city}
                     onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
@@ -303,7 +304,6 @@ function CheckoutPage() {
                   <label className="block text-sm font-medium text-gray-700">Postnummer</label>
                   <input
                     type="text"
-                    required
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
                     value={formData.postalCode}
                     onChange={(e) => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
@@ -315,14 +315,11 @@ function CheckoutPage() {
                 <label className="block text-sm font-medium text-gray-700">Telefon</label>
                 <input
                   type="tel"
-                  required
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
                   value={formData.phone}
                   onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                 />
               </div>
-
-
 
               {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-2">

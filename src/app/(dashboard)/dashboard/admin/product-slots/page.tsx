@@ -209,20 +209,29 @@ export default function ProductSlotsPage() {
     }
   }
 
-  // Slet slot
+  // Slet slot inkl. Stripe
   const handleDelete = async (id: string) => {
-    if (!confirm('Er du sikker på at du vil slette denne slot?')) return
-
+    if (!confirm('Er du sikker på at du vil slette denne slot?')) return;
     try {
-      const { error } = await supabase
-        .from('product_slots')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-      fetchSlots()
-    } catch (error) {
-      console.error('Fejl ved sletning af slot:', error)
+      const response = await fetch('/api/delete-product-slot', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ slotId: id }),
+      });
+      const result = await response.json();
+      if (!response.ok || result.error) {
+        alert('Fejl ved sletning: ' + (result.error || 'Ukendt fejl'));
+        return;
+      }
+      if (result.warning) {
+        alert('Advarsel: ' + result.warning + (result.stripeError ? (' (' + result.stripeError + ')') : ''));
+      }
+      fetchSlots();
+    } catch (error: any) {
+      console.error('Fejl ved sletning af slot:', error);
+      alert('Der opstod en fejl ved sletning af slot: ' + (error.message || error));
     }
   }
 

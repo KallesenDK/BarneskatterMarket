@@ -143,17 +143,22 @@ function CheckoutPage() {
       // Udvælg Stripe priceId
       const priceId = selectedPackage?.stripe_price_id || selectedSlot?.stripe_price_id;
       if (!priceId) throw new Error('Stripe priceId mangler');
-      const res = await fetch('/api/create-checkout-session', {
+      const res = await fetch('/api/create-cart-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          priceId,
-          email: formData.email,
-          name: formData.name,
-          address: formData.address,
-          city: formData.city,
-          postalCode: formData.postalCode,
-          phone: formData.phone,
+          cartItems: [{
+            stripe_price_id: priceId,
+            quantity: 1,
+          }],
+          customerInfo: {
+            email: formData.email,
+            name: formData.name,
+            address: formData.address,
+            city: formData.city,
+            postalCode: formData.postalCode,
+            phone: formData.phone,
+          },
           successUrl: window.location.origin + '/checkout/success',
           cancelUrl: window.location.origin + '/checkout/cancel',
         }),

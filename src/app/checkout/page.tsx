@@ -47,8 +47,6 @@ function CheckoutPage() {
   }, [itemsParam]);
   const router = useRouter();
   const { supabase } = useSupabase();
-  const [selectedPackage, setSelectedPackage] = useState<SubscriptionPackage | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<ProductSlot | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -68,89 +66,62 @@ function CheckoutPage() {
   });
 
   useEffect(() => {
-    const packageId = searchParams.get('package');
-    const slotId = searchParams.get('product-slots');
-
-    const fetchData = async () => {
+    const checkSubscriptionStatus = async () => {
       try {
-        // Hent bruger
         const { data: { user } } = await supabase.auth.getUser();
-        
         if (!user) {
           router.push('/auth/signin');
           return;
         }
-
-
-        // Hvis der er valgt en produktplads, tjek for aktivt abonnement
-        if (slotId) {
+        // Findes der slots i kurven?
+        const hasSlot = cartItems.some(item => item.type === 'slot' || item.slot_count !== undefined);
+        // Findes der abonnementspakke i kurven?
+        const hasPackage = cartItems.some(item => item.type === 'package' || item.duration_weeks !== undefined);
+        if (hasSlot && !hasPackage) {
+          // Tjek kun brugerens aktive abonnement hvis der ikke købes abonnement nu
           const subscription = await getUserSubscription(user.id);
           setHasActiveSubscription(!!subscription);
-          
           if (!subscription) {
-            setError('Du skal have et aktivt abonnement for at købe produktpladser. Køb venligst en pakke først.');
-            return;
+            setError('Du skal have et aktivt abonnement for at købe produktpladser. Tilføj en pakke til kurven eller køb kun produkter.');
           }
-
+        } else {
+          setHasActiveSubscription(true); // ingen blokering
         }
-
-
-        // Hent valgt item
-        if (packageId) {
-          const { data, error } = await supabase
-            .from('subscription_packages')
-            .select('*')
-            .eq('id', packageId)
-            .single();
-
-          if (error) throw error;
-          if (data) setSelectedPackage(data);
-        }
-
-
-        if (slotId) {
-          const { data, error } = await supabase
-            .from('product_slots')
-            .select('*')
-            .eq('id', slotId)
-            .single();
-
-          if (error) throw error;
-          if (data) setSelectedSlot(data);
-        }
-
       } catch (error) {
         console.error('Fejl ved hentning af data:', error);
         setError('Der opstod en fejl ved indlæsning af data');
       }
-
     };
-
-    fetchData();
-  }, [searchParams, supabase, router]);
+    checkSubscriptionStatus();
+  }, [cartItems, supabase, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  console.log('handleSubmit CALLED');
-  console.log('selectedPackage:', selectedPackage);
-  console.log('selectedSlot:', selectedSlot);
-  console.log('isProcessing before submit:', isProcessing);
     e.preventDefault();
-    if (!selectedPackage && !selectedSlot) return;
-    console.log('setIsProcessing(true)');
-  setIsProcessing(true);
+    if (isProcessing) return;
+    setIsProcessing(true);
     setError(null);
     try {
-      // Udvælg Stripe priceId
-      const priceId = selectedPackage?.stripe_price_id || selectedSlot?.stripe_price_id;
-      if (!priceId) throw new Error('Stripe priceId mangler');
+      // Byg cartItems til Stripe (kun dem med stripe_price_id)
+      const stripeCartItems = cartItems
+        .filter(item => item.stripe_price_id)
+        .map(item => ({
+          stripe_price_id: item.stripe_price_id,
+          quantity: item.quantity || 1,
+        }));
+      if (stripeCartItems.length === 0) throw new Error('Ingen produkter med Stripe price sat i kurven.');
+      // Check for slot-krav
+      const hasSlot = cartItems.some(item => item.type === 'slot' || item.slot_count !== undefined);
+      const hasPackage = cartItems.some(item => item.type === 'package' || item.duration_weeks !== undefined);
+      if (hasSlot && !hasPackage && !hasActiveSubscription) {
+        setError('Du skal have et aktivt abonnement for at købe produktpladser. Tilføj en pakke til kurven eller køb kun produkter.');
+        setIsProcessing(false);
+        return;
+      }
       const res = await fetch('/api/create-cart-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cartItems: [{
-            stripe_price_id: priceId,
-            quantity: 1,
-          }],
+          cartItems: stripeCartItems,
           customerInfo: {
             email: formData.email,
             name: formData.name,
@@ -172,10 +143,10 @@ function CheckoutPage() {
     } catch (error: any) {
       setError(error.message || 'Der opstod en fejl under betaling');
     } finally {
-      console.log('setIsProcessing(false)');
-    setIsProcessing(false);
+      setIsProcessing(false);
     }
   };
+
 
   if (success) {
     return (
@@ -233,8 +204,7 @@ function CheckoutPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
 
         <Link 
-          href={selectedPackage ? "/packages" : "/product-slots"}
-
+          href={cartItems.length === 0 ? "/dashboard" : "/product-slots"}
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-8"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
@@ -266,43 +236,14 @@ function CheckoutPage() {
               </div>
             )}
 
-            {/* Vis selectedPackage/selectedSlot hvis de findes */}
-            {(selectedPackage || selectedSlot) && (
-              <div>
-                {selectedPackage && (
-                  <div className="border-b pb-4 mb-4">
-                    <h3 className="font-medium">{selectedPackage.name}</h3>
-                    <p className="text-gray-600">{selectedPackage.description}</p>
-                    <div className="mt-2">
-                      <span className="text-lg font-semibold">
-                        {selectedPackage.price.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
-                      </span>
-                      <span className="text-sm text-gray-500"> / {selectedPackage.duration_weeks} uger</span>
-                    </div>
-                  </div>
-                )}
-                {selectedSlot && (
-                  <div className="border-b pb-4 mb-4">
-                    <h3 className="font-medium">{selectedSlot.name}</h3>
-                    <p className="text-gray-600">{selectedSlot.description}</p>
-                    <div className="mt-2">
-                      <span className="text-lg font-semibold">
-                        {selectedSlot.price.toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })}
-                      </span>
-                      <span className="text-sm text-gray-500"> / {selectedSlot.slot_count} pladser</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
+            {/* Fjernet selectedPackage/selectedSlot visning - alt vises via cartItems */}
             <div className="border-t pt-4">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Total</span>
                 <span className="text-xl font-bold">
                   {cartItems.length > 0
                     ? cartItems.reduce((sum, item) => sum + (item.price || 0), 0).toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })
-                    : (selectedPackage?.price || selectedSlot?.price || 0).toLocaleString('da-DK', { style: 'currency', currency: 'DKK' })
+                    : '0,00 kr.'
                   }
                 </span>
               </div>

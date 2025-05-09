@@ -201,6 +201,8 @@ export default function ProductsPage() {
     );
   }
 
+  // Debug: Log alle produkter i render
+  console.log('Render products:', products);
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -346,6 +348,12 @@ export default function ProductsPage() {
                   >
                     Rediger
                   </Link>
+                  {/* Debug: Log checkout item */}
+                  {(() => {
+                    const checkoutObj = { id: product.id, title: product.title, price: product.price, image: product.images?.[0] || product.image_url, stripe_price_id: product.stripe_price_id };
+                    console.log('Checkout-link object for', product.title, ':', checkoutObj);
+                    return null;
+                  })()}
                   <Link
                     href={product.stripe_price_id ? `/checkout?items=${encodeURIComponent(JSON.stringify([{ id: product.id, title: product.title, price: product.price, image: product.images?.[0] || product.image_url, stripe_price_id: product.stripe_price_id }]))}` : '#'}
                     className={`ml-4 text-white px-3 py-1 rounded ${product.stripe_price_id ? 'bg-[#1AA49A] hover:bg-[#158F86]' : 'bg-gray-400 cursor-not-allowed'}`}
@@ -355,6 +363,9 @@ export default function ProductsPage() {
                   >
                     Køb
                   </Link>
+                  {!product.stripe_price_id && (
+                    <div className="text-xs text-red-600 mt-1">Dette produkt mangler Stripe price og kan ikke købes.</div>
+                  )}
                 </td>
               </tr>
             ))}

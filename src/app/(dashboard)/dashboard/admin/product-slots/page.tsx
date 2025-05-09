@@ -153,36 +153,26 @@ export default function ProductSlotsPage() {
           }
         }
       } else {
-        console.log('Creating new slot')
-        // Opret ny slot
-        const { data: newSlot, error } = await supabase
-          .from('product_slots')
-          .insert([{
-            ...slotData,
-            created_at: new Date().toISOString()
-          }])
-          .select()
-          .single()
-
-        console.log('Insert response:', { newSlot, error })
-
-        if (error) {
-          console.error('Fejl ved oprettelse af slot:', error)
-          alert('Fejl ved oprettelse af slot: ' + error.message)
-          return
-        }
-
-        // Hvis denne slot er sat som populær, fjern populær status fra andre slots
-        if (slotData.is_popular && newSlot) {
-          console.log('Updating popular status for other slots')
-          const { error: popularError } = await supabase
-            .from('product_slots')
-            .update({ is_popular: false })
-            .neq('id', newSlot.id)
-
-          if (popularError) {
-            console.error('Fejl ved opdatering af populær status:', popularError)
+        console.log('Creating new slot via API')
+        try {
+          const response = await fetch('/api/create-product-slot', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(slotData),
+          });
+          const result = await response.json();
+          console.log('API response:', result);
+          if (!response.ok || result.error) {
+            const message = result.error || 'Ukendt fejl ved oprettelse af slot';
+            alert('Fejl ved oprettelse af slot: ' + message);
+            return;
           }
+        } catch (apiError: any) {
+          console.error('Fejl ved oprettelse af slot via API:', apiError);
+          alert('Fejl ved oprettelse af slot: ' + (apiError.message || apiError));
+          return;
         }
       }
 

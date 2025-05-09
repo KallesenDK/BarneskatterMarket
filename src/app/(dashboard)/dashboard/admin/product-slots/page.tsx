@@ -153,6 +153,7 @@ export default function ProductSlotsPage() {
           }
         }
       } else {
+        // Opret ny slot via API (Stripe + Supabase)
         console.log('Creating new slot via API')
         try {
           const response = await fetch('/api/create-product-slot', {
@@ -160,7 +161,17 @@ export default function ProductSlotsPage() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(slotData),
+            body: JSON.stringify({
+              name: slotData.name,
+              description: slotData.description,
+              price: slotData.price,
+              slot_count: slotData.slot_count,
+              is_active: slotData.is_active,
+              is_popular: slotData.is_popular,
+              discount_price: slotData.discount_price,
+              discount_start_date: slotData.discount_start_date,
+              discount_end_date: slotData.discount_end_date,
+            }),
           });
           const result = await response.json();
           console.log('API response:', result);

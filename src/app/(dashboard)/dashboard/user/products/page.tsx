@@ -10,19 +10,7 @@ import Image from 'next/image';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useToast } from '@/components/ui/use-toast';
 
-type Product = {
-  id: string;
-  title: string;
-  price: number;
-  status: string;
-  created_at: string;
-  expires_at: string | null;
-  featured: boolean;
-  category_name: string;
-  image_url: string | null;
-  images: string[]; // Added for thumbnail and gallery support
-  stripe_price_id: string; // <-- Stripe Price ID
-};
+import { Product } from '@/lib/types';
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -79,7 +67,33 @@ export default function ProductsPage() {
 
         if (error) throw error;
         console.log('Fetched products (with stripe_price_id):', data);
-        setProducts(data || []);
+        // Map data så alle nødvendige felter fra Product-interfacet er med og aldrig undefined
+        setProducts((data || []).map((item: any) => ({
+          id: item.id,
+          title: item.title || '',
+          description: item.description || '',
+          price: typeof item.price === 'number' ? item.price : 0,
+          discountPrice: item.discountPrice ?? item.discount_price ?? undefined,
+          discount_price: item.discount_price ?? undefined,
+          discountActive: item.discountActive ?? item.discount_active ?? undefined,
+          discount_active: item.discount_active ?? undefined,
+          images: Array.isArray(item.images) ? item.images : [],
+          tags: Array.isArray(item.tags) ? item.tags : [],
+          category: item.category || '',
+          location: item.location || '',
+          createdAt: item.createdAt ?? item.created_at ?? undefined,
+          expiresAt: item.expiresAt ?? item.expires_at ?? undefined,
+          created_at: item.created_at ?? undefined,
+          expires_at: item.expires_at ?? undefined,
+          userId: item.userId ?? item.user_id ?? undefined,
+          user_id: item.user_id ?? undefined,
+          user: item.user ?? undefined,
+          stripe_product_id: item.stripe_product_id ?? '',
+          stripe_price_id: item.stripe_price_id ?? '',
+          status: item.status || '',
+          featured: !!item.featured,
+          category_name: item.category_name || '',
+        })) as Product[];
       } catch (error) {
         console.error('Fejl ved hentning af produkter:', error);
         toast({
@@ -107,7 +121,7 @@ export default function ProductsPage() {
 
       if (error) throw error;
 
-      setProducts(products.filter(p => !selectedProducts.includes(p.id)));
+      setProducts(products.filter(p => p.id && !selectedProducts.includes(p.id)));
       setSelectedProducts([]);
       toast({
         title: 'De valgte produkter er blevet slettet',
@@ -256,7 +270,7 @@ export default function ProductsPage() {
                   checked={selectedProducts.length === products.length}
                   onChange={(e) => {
                     if (e.target.checked) {
-                      setSelectedProducts(products.map(p => p.id));
+                      setSelectedProducts(products.map(p => p.id).filter(Boolean) as string[]);
                     } else {
                       setSelectedProducts([]);
                     }
@@ -290,9 +304,9 @@ export default function ProductsPage() {
                     checked={selectedProducts.includes(product.id)}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedProducts([...selectedProducts, product.id]);
+                        setSelectedProducts([...selectedProducts, product.id].filter(Boolean) as string[]);
                       } else {
-                        setSelectedProducts(selectedProducts.filter(id => id !== product.id));
+                        setSelectedProducts(selectedProducts.filter(id => !!id && id !== product.id));
                       }
                     }}
                   />
@@ -339,7 +353,7 @@ export default function ProductsPage() {
                   {formatMoney(product.price)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatRelativeDate(product.created_at)}
+                  {product.created_at ? formatRelativeDate(product.created_at as string) : ''}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <Link

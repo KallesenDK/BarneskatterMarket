@@ -35,7 +35,11 @@ export interface Product {
   userId?: string;
   user_id?: string;
   user?: Profile;
+  // Stripe integration fields
+  stripe_product_id?: string;
+  stripe_price_id?: string;
 }
+
 
 export interface Category {
   id: string;

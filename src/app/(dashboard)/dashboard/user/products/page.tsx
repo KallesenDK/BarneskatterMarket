@@ -21,6 +21,7 @@ type Product = {
   category_name: string;
   image_url: string | null;
   images: string[]; // Added for thumbnail and gallery support
+  stripe_price_id: string; // <-- Stripe Price ID
 };
 
 export default function ProductsPage() {
@@ -72,7 +73,7 @@ export default function ProductsPage() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('*')
+          .select('*, stripe_price_id')
           .eq('user_id', userId)
           .order('created_at', { ascending: false });
 
@@ -343,6 +344,12 @@ export default function ProductsPage() {
                     className="text-[#1AA49A] hover:text-[#158F86]"
                   >
                     Rediger
+                  </Link>
+                  <Link
+                    href={`/checkout?items=${encodeURIComponent(JSON.stringify([{ id: product.id, title: product.title, price: product.price, image: product.images?.[0] || product.image_url, stripe_price_id: product.stripe_price_id }]))}`}
+                    className="ml-4 text-white bg-[#1AA49A] hover:bg-[#158F86] px-3 py-1 rounded"
+                  >
+                    Køb
                   </Link>
                 </td>
               </tr>

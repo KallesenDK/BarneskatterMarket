@@ -96,19 +96,19 @@ function CheckoutPage() {
   }, [cartItems, supabase, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log('FORM SUBMIT CALLED'); // Debug!
     e.preventDefault();
+    console.log('FORM SUBMIT CALLED'); // Debug!
+    console.log('cartItems:', cartItems);
+    const stripeCartItems = cartItems
+      ? cartItems.filter(item => item.stripe_price_id)
+      : [];
+    console.log('stripeCartItems:', stripeCartItems);
+    console.log('formData:', formData);
     if (isProcessing) return;
     setIsProcessing(true);
     setError(null);
     try {
-      // Byg cartItems til Stripe (kun dem med stripe_price_id)
-      const stripeCartItems = cartItems
-        .filter(item => item.stripe_price_id)
-        .map(item => ({
-          stripe_price_id: item.stripe_price_id,
-          quantity: item.quantity || 1,
-        }));
+      if (!cartItems || cartItems.length === 0) throw new Error('cartItems er tom!');
       if (stripeCartItems.length === 0) throw new Error('Ingen produkter med Stripe price sat i kurven.');
       // Check for slot-krav
       const hasSlot = cartItems.some(item => item.type === 'slot' || item.slot_count !== undefined);
@@ -118,9 +118,6 @@ function CheckoutPage() {
         setIsProcessing(false);
         return;
       }
-      console.log('cartItems:', cartItems);
-      console.log('stripeCartItems:', stripeCartItems);
-      console.log('formData:', formData);
       const res = await fetch('/api/create-cart-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

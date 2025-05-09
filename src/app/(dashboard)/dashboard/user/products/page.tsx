@@ -73,12 +73,12 @@ export default function ProductsPage() {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('*')
+          .select('id, title, price, images, image_url, stripe_price_id, status, created_at, expires_at, featured, category_name')
           .eq('user_id', userId)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        console.log('Fetched products:', data);
+        console.log('Fetched products (with stripe_price_id):', data);
         setProducts(data || []);
       } catch (error) {
         console.error('Fejl ved hentning af produkter:', error);

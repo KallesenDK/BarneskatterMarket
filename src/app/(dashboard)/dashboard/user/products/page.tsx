@@ -94,6 +94,7 @@ export default function ProductsPage() {
           featured: !!item.featured,
           category_name: item.category_name || '',
         })) as Product[];
+
       } catch (error) {
         console.error('Fejl ved hentning af produkter:', error);
         toast({

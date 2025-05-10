@@ -32,6 +32,9 @@ interface ProductSlot {
 }
 
 function CheckoutPage() {
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [lastSubmitEvent, setLastSubmitEvent] = useState<any>(null);
+
   const searchParams = useSearchParams();
   const itemsParam = searchParams.get('items');
   const [cartItems, setCartItems] = useState<any[]>([]);
@@ -266,7 +269,14 @@ function CheckoutPage() {
           {/* Betalingsformular */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Betalingsoplysninger</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+  onSubmit={e => {
+    e.preventDefault();
+    setLastSubmitEvent(e);
+    setShowTermsModal(true);
+  }}
+  className="space-y-4"
+>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Fornavn</label>
@@ -375,33 +385,120 @@ function CheckoutPage() {
                   />
                 </div>
               </div>
-              {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-2">
-                  {error}
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Nummer</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                  value={formData.streetNumber || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, streetNumber: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Postnummer</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                  value={formData.postalCode || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">By</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                  value={formData.city || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Telefonnummer</label>
+              <input
+                type="tel"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                value={formData.phone || ''}
+                onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                  value={formData.email || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Bekræft email</label>
+                <input
+                  type="email"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                  value={formData.emailConfirm || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, emailConfirm: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-2">
+                {error}
+              </div>
+            )}
+            <button
+              type="button"
+              disabled={isProcessing}
+              className="w-full bg-[#1AA49A] text-white py-3 px-4 rounded-md hover:bg-[#158C84] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1AA49A] disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => setShowTermsModal(true)}
+            >
+              {isProcessing ? (
+                <span className="flex items-center justify-center">
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Behandler...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center">
+                  Betal nu
+                </span>
               )}
-              <button
-                type="submit"
-                disabled={isProcessing}
-                className="w-full bg-[#1AA49A] text-white py-3 px-4 rounded-md hover:bg-[#158C84] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1AA49A] disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => {
-                  console.log('CLICK: isProcessing', isProcessing);
-                }}
-              >
-                {isProcessing ? (
-                  <span className="flex items-center justify-center">
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Behandler...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center">
-                    <CreditCard className="w-5 h-5 mr-2" />
-                    Betal nu
-                  </span>
-                )}
-              </button>
-            </form>
-          </div>
+            </button>
+
+            {/* Modal for accept af vilkår */}
+            {showTermsModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+                  <h3 className="text-lg font-semibold mb-2">Vilkår for reservation</h3>
+                  <p className="mb-4 text-sm text-gray-700">
+                    Du accepterer hermed, at din reservation er bindende, og at varen kun kan afhentes i butikken. Din reservation er gyldig i 24 timer fra nu. Læs og accepter vores handelsbetingelser.
+                  </p>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      className="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      onClick={() => setShowTermsModal(false)}
+                    >
+                      Annuller
+                    </button>
+                    <button
+                      className="px-4 py-2 rounded bg-[#1AA49A] text-white hover:bg-[#158C84]"
+                      onClick={() => { setShowTermsModal(false); handleSubmit(lastSubmitEvent); }}
+                    >
+                      Accepter og betal
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </form>
         </div>
       </div>
     </div>

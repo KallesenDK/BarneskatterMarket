@@ -89,7 +89,7 @@ export default function ProductsPage() {
           user_id: item.user_id ?? undefined,
           user: item.user ?? undefined,
           stripe_product_id: item.stripe_product_id ?? '',
-          stripe_price_id: item.stripe_price_id ?? '',
+          stripe_price_id: item.stripe_price_id ?? undefined,
           status: item.status || '',
           featured: !!item.featured,
           category_name: item.category_name || ''
@@ -371,7 +371,7 @@ export default function ProductsPage() {
                   </Link>
                   {/* Debug: Log checkout item */}
                   {(() => {
-                    const checkoutObj = { id: product.id, title: product.title, price: product.price, image: product.images?.[0] || product.image_url, stripe_price_id: product.stripe_price_id || '' };
+                    const checkoutObj = { id: product.id, title: product.title, price: product.price, image: product.images?.[0] || product.image_url, stripe_price_id: product.stripe_price_id };
                     console.log('Checkout-link object for', product.title, ':', checkoutObj);
                     return null;
                   })()}
@@ -381,7 +381,7 @@ export default function ProductsPage() {
                       title: product.title, 
                       price: product.price, 
                       image: product.images?.[0] || product.image_url, 
-                      stripe_price_id: product.stripe_price_id || ''
+                      stripe_price_id: product.stripe_price_id
                     }]))}`}
                     className={`ml-4 text-white px-3 py-1 rounded ${product.stripe_price_id ? 'bg-[#1AA49A] hover:bg-[#158F86]' : 'bg-gray-400 cursor-not-allowed'}`}
                     title={product.stripe_price_id ? '' : 'Dette produkt mangler Stripe price og kan ikke købes'}

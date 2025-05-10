@@ -69,31 +69,31 @@ export default function ProductsPage() {
         console.log('Fetched products (with stripe_price_id):', data);
         // Map data så alle nødvendige felter fra Product-interfacet er med og aldrig undefined
         setProducts((data || []).map((item: any) => ({
-          id: item.id,
-          title: item.title || '',
-          description: item.description || '',
-          price: typeof item.price === 'number' ? item.price : 0,
-          discountPrice: item.discountPrice ?? item.discount_price ?? undefined,
-          discount_price: item.discount_price ?? undefined,
-          discountActive: item.discountActive ?? item.discount_active ?? undefined,
-          discount_active: item.discount_active ?? undefined,
-          images: Array.isArray(item.images) ? item.images : [],
-          tags: Array.isArray(item.tags) ? item.tags : [],
-          category: item.category || '',
-          location: item.location || '',
-          createdAt: item.createdAt ?? item.created_at ?? undefined,
-          expiresAt: item.expiresAt ?? item.expires_at ?? undefined,
-          created_at: item.created_at ?? undefined,
-          expires_at: item.expires_at ?? undefined,
-          userId: item.userId ?? item.user_id ?? undefined,
-          user_id: item.user_id ?? undefined,
-          user: item.user ?? undefined,
-          stripe_product_id: item.stripe_product_id ?? '',
-          stripe_price_id: item.stripe_price_id ?? '',
-          status: item.status || '',
-          featured: !!item.featured,
-          category_name: item.category_name || ''
-        })) as Product[]
+  id: item.id,
+  title: item.title || '',
+  description: item.description || '',
+  price: typeof item.price === 'number' ? item.price : 0,
+  discountPrice: item.discountPrice ?? item.discount_price ?? undefined,
+  discount_price: item.discount_price ?? undefined,
+  discountActive: item.discountActive ?? item.discount_active ?? undefined,
+  discount_active: item.discount_active ?? undefined,
+  images: Array.isArray(item.images) ? item.images : [],
+  tags: Array.isArray(item.tags) ? item.tags : [],
+  category: item.category || '',
+  location: item.location || '',
+  createdAt: item.createdAt ?? item.created_at ?? undefined,
+  expiresAt: item.expiresAt ?? item.expires_at ?? undefined,
+  created_at: item.created_at ?? undefined,
+  expires_at: item.expires_at ?? undefined,
+  userId: item.userId ?? item.user_id ?? undefined,
+  user_id: item.user_id ?? undefined,
+  user: item.user ?? undefined,
+  stripe_product_id: item.stripe_product_id ?? '',
+  stripe_price_id: item.stripe_price_id ?? '',
+  status: item.status || '',
+  featured: !!item.featured,
+  category_name: item.category_name || ''
+})) as Product[]
 
       } catch (error) {
         console.error('Fejl ved hentning af produkter:', error);

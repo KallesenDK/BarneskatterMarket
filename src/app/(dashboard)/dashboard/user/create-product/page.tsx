@@ -410,6 +410,184 @@ router.push('/dashboard/user/products');
           </p>
         </div>
 
+        {/* --- FLERE FELTER FRA PRODUCTS-TABEL --- */}
+        {/* Tilbudspris */}
+        <div>
+          <label htmlFor="discount_price" className="block text-sm font-medium text-gray-700">Tilbudspris (DKK)</label>
+          <input
+            type="number"
+            name="discount_price"
+            id="discount_price"
+            value={formData.discount_price}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+            placeholder="0"
+            min="0"
+            step="1"
+          />
+        </div>
+        {/* Tilbud aktiv */}
+        <div>
+          <label htmlFor="discount_active" className="block text-sm font-medium text-gray-700">Tilbud aktiv?</label>
+          <input
+            type="checkbox"
+            name="discount_active"
+            id="discount_active"
+            checked={formData.discount_active}
+            onChange={e => setFormData(prev => ({ ...prev, discount_active: e.target.checked }))}
+            className="mr-2"
+          />
+          <span>{formData.discount_active ? 'Ja' : 'Nej'}</span>
+        </div>
+        {/* Status */}
+        <div>
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
+          <select
+            name="status"
+            id="status"
+            value={formData.status}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+          >
+            <option value="active">Aktiv</option>
+            <option value="draft">Kladde</option>
+            <option value="sold">Solgt</option>
+          </select>
+        </div>
+        {/* Udvalgt/featured */}
+        <div>
+          <label htmlFor="featured" className="block text-sm font-medium text-gray-700">Udvalgt (featured)</label>
+          <input
+            type="checkbox"
+            name="featured"
+            id="featured"
+            checked={formData.featured}
+            onChange={e => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
+            className="mr-2"
+          />
+          <span>{formData.featured ? 'Ja' : 'Nej'}</span>
+        </div>
+        {/* Stripe produkt ID */}
+        <div>
+          <label htmlFor="stripe_product_id" className="block text-sm font-medium text-gray-700">Stripe produkt ID</label>
+          <input
+            type="text"
+            name="stripe_product_id"
+            id="stripe_product_id"
+            value={formData.stripe_product_id}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+        {/* Stripe pris ID */}
+        <div>
+          <label htmlFor="stripe_price_id" className="block text-sm font-medium text-gray-700">Stripe pris ID</label>
+          <input
+            type="text"
+            name="stripe_price_id"
+            id="stripe_price_id"
+            value={formData.stripe_price_id}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+        {/* Kategori ID */}
+        <div>
+          <label htmlFor="category_id" className="block text-sm font-medium text-gray-700">Kategori ID</label>
+          <input
+            type="text"
+            name="category_id"
+            id="category_id"
+            value={formData.category_id}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+        {/* Kategori ID (gammel) */}
+        <div>
+          <label htmlFor="category_id_old" className="block text-sm font-medium text-gray-700">Kategori ID (gammel)</label>
+          <input
+            type="text"
+            name="category_id_old"
+            id="category_id_old"
+            value={formData.category_id_old}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+        {/* Udløbsdato */}
+        <div>
+          <label htmlFor="expires_at" className="block text-sm font-medium text-gray-700">Udløbsdato</label>
+          <input
+            type="datetime-local"
+            name="expires_at"
+            id="expires_at"
+            value={formData.expires_at}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+        {/* Bruger ID */}
+        <div>
+          <label htmlFor="user_id" className="block text-sm font-medium text-gray-700">Bruger ID</label>
+          <input
+            type="text"
+            name="user_id"
+            id="user_id"
+            value={formData.user_id}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+        {/* Stand/condition */}
+        <div>
+          <label htmlFor="condition" className="block text-sm font-medium text-gray-700">Stand</label>
+          <input
+            type="text"
+            name="condition"
+            id="condition"
+            value={formData.condition}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+        {/* Lokation */}
+        <div>
+          <label htmlFor="location" className="block text-sm font-medium text-gray-700">Lokation</label>
+          <input
+            type="text"
+            name="location"
+            id="location"
+            value={formData.location}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+        {/* Butik */}
+        <div>
+          <label htmlFor="butik" className="block text-sm font-medium text-gray-700">Butik (afhentning)</label>
+          <input
+            type="text"
+            name="butik"
+            id="butik"
+            value={formData.butik}
+            onChange={handleChange}
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+        {/* Visninger (readonly) */}
+        <div>
+          <label htmlFor="views" className="block text-sm font-medium text-gray-700">Antal visninger</label>
+          <input
+            type="number"
+            name="views"
+            id="views"
+            value={formData.views}
+            readOnly
+            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-100 rounded-md bg-gray-100"
+          />
+        </div>
+
         {/* Billeder */}
         <div>
           <label className="block text-sm font-medium text-gray-700">

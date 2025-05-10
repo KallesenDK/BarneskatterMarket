@@ -167,7 +167,7 @@ export default function UserDashboardPage() {
       {/* Produkter sektion */}
       <div className="bg-white rounded-lg shadow p-6 mb-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Dine produkter til salg ({products.length} af {subscription?.total_slots || 0})</h2>
+          <h2 className="text-xl font-semibold">Dine produkter til salg</h2>
           <Link
             href="/dashboard/user/create-product"
             className="bg-[#1AA49A] text-white px-4 py-2 rounded-md hover:bg-[#1AA49A]/90"

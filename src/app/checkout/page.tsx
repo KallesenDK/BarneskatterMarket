@@ -54,15 +54,16 @@ function CheckoutPage() {
 
   // Form state
   const [formData, setFormData] = useState({
-    email: '',
-    name: '',
-    address: '',
-    city: '',
+    firstName: '',
+    lastName: '',
+    mobile: '',
+    street: '',
+    streetNumber: '',
     postalCode: '',
+    city: '',
     phone: '',
-    cardNumber: '',
-    cardExpiry: '',
-    cardCvc: '',
+    email: '',
+    emailConfirm: '',
   });
 
   useEffect(() => {
@@ -255,69 +256,115 @@ function CheckoutPage() {
           {/* Betalingsformular */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Betalingsoplysninger</h2>
-            
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <input
-                  type="email"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Navn</label>
-                <input
-                  type="text"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Adresse</label>
-                <input
-                  type="text"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
-                  value={formData.address}
-                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                />
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">By</label>
+                  <label className="block text-sm font-medium text-gray-700">Fornavn</label>
                   <input
                     type="text"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
-                    value={formData.city}
-                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    value={formData.firstName || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                    required
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Efternavn</label>
+                  <input
+                    type="text"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                    value={formData.lastName || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Mobilnummer</label>
+                <input
+                  type="tel"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                  value={formData.mobile || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Gade</label>
+                  <input
+                    type="text"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                    value={formData.street || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, street: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nummer</label>
+                  <input
+                    type="text"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                    value={formData.streetNumber || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, streetNumber: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Postnummer</label>
                   <input
                     type="text"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
-                    value={formData.postalCode}
-                    onChange={(e) => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
+                    value={formData.postalCode || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">By</label>
+                  <input
+                    type="text"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                    value={formData.city || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    required
                   />
                 </div>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700">Telefon</label>
+                <label className="block text-sm font-medium text-gray-700">Telefonnummer</label>
                 <input
                   type="tel"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  value={formData.phone || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  required
                 />
               </div>
-
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    type="email"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                    value={formData.email || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Bekræft email</label>
+                  <input
+                    type="email"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#1AA49A] focus:ring-[#1AA49A]"
+                    value={formData.emailConfirm || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, emailConfirm: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
               {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-2">
                   {error}

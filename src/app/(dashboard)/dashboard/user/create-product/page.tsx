@@ -20,8 +20,22 @@ export default function CreateProductPage() {
     title: '',
     description: '',
     price: '',
+    discount_price: '',
+    discount_active: false,
     category: '',
+    category_id: '',
+    category_id_old: '',
     tags: '',
+    status: 'active',
+    featured: false,
+    stripe_product_id: '',
+    stripe_price_id: '',
+    views: 0,
+    expires_at: '',
+    user_id: '',
+    condition: '',
+    location: '',
+    butik: '',
   });
   const [images, setImages] = useState<File[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -448,54 +462,54 @@ router.push('/dashboard/user/products');
 
           {/* Forhåndsvisning af billeder */}
           {imageUrls.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-              {imageUrls.map((url, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={url}
-                    alt={`Billede ${index + 1}`}
-                    className="h-24 w-24 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute -top-2 -right-2 bg-red-100 rounded-full p-1 text-red-600 hover:bg-red-200"
-                  >
-                    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path
-                        fillRule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+  <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+    {imageUrls.map((url, index) => (
+      <div key={index} className="relative">
+        <img
+          src={url}
+          alt={`Billede ${index + 1}`}
+          className="h-24 w-24 object-cover rounded-lg"
+        />
+        <button
+          type="button"
+          onClick={() => removeImage(index)}
+          className="absolute -top-2 -right-2 bg-red-100 rounded-full p-1 text-red-600 hover:bg-red-200"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              fillRule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+    ))}
+  </div>
+)}
+  </div>
 
-        {/* Submit knap */}
-        <div className="pt-5">
-          <div className="flex justify-end">
-            <Link
-              href="/dashboard/user"
-              className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1AA49A]"
-            >
-              Annuller
-            </Link>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#1AA49A] hover:bg-[#158F86] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1AA49A] ${
-                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              {isSubmitting ? 'Opretter...' : 'Opret produkt'}
-            </button>
-          </div>
-        </div>
-      </form>
+  {/* Submit knap */}
+  <div className="pt-5">
+    <div className="flex justify-end">
+      <Link
+        href="/dashboard/user"
+        className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1AA49A]"
+      >
+        Annuller
+      </Link>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className={`ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#1AA49A] hover:bg-[#158F86] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1AA49A] ${
+          isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
+      >
+        {isSubmitting ? 'Opretter...' : 'Opret produkt'}
+      </button>
     </div>
-  );
-} 
+  </div>
+</form>
+</div>
+);
+}

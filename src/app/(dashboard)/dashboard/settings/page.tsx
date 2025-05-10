@@ -18,9 +18,8 @@ interface GridSettings {
 interface SiteSettings {
   creditPackagesGrid: GridSettings;
   subscriptionPackagesGrid: GridSettings;
-  stripeSecretKey?: string;
-  stripePublishableKey?: string;
   thankYouContent?: string;
+  adminOrderEmails?: string;
 }
 
 export default function SettingsPage() {
@@ -44,15 +43,13 @@ export default function SettingsPage() {
         if (data) {
           const creditPackagesGrid = data.find(s => s.key === 'credit_packages_grid')?.value || { lg: 3, md: 2, sm: 1 };
           const subscriptionPackagesGrid = data.find(s => s.key === 'subscription_packages_grid')?.value || { lg: 3, md: 2, sm: 1 };
-          const stripeSecretKey = data.find(s => s.key === 'stripe_secret_key')?.value || '';
-          const stripePublishableKey = data.find(s => s.key === 'stripe_publishable_key')?.value || '';
           const thankYouContent = data.find(s => s.key === 'thank_you_content')?.value || '';
+          const adminOrderEmails = data.find(s => s.key === 'admin_order_emails')?.value || '';
           setSettings({
             creditPackagesGrid,
             subscriptionPackagesGrid,
-            stripeSecretKey,
-            stripePublishableKey,
-            thankYouContent
+            thankYouContent,
+            adminOrderEmails
           });
         }
       } catch (error) {
@@ -65,17 +62,16 @@ export default function SettingsPage() {
     loadSettings();
   }, [supabase]);
 
-  const [stripeKeyInput, setStripeKeyInput] = useState(settings.stripeSecretKey || '');
-  const [savingStripeKey, setSavingStripeKey] = useState(false);
-  const [stripePublishableKeyInput, setStripePublishableKeyInput] = useState(settings.stripePublishableKey || '');
-  const [savingStripePublishableKey, setSavingStripePublishableKey] = useState(false);
-  const [showSecret, setShowSecret] = useState(false);
-  const [showPublishable, setShowPublishable] = useState(false);
+
   const [thankYouContent, setThankYouContent] = useState(settings.thankYouContent || '');
   const [savingThankYou, setSavingThankYou] = useState(false);
+  const [adminOrderEmails, setAdminOrderEmails] = useState(settings.adminOrderEmails || '');
+  const [savingAdminOrderEmails, setSavingAdminOrderEmails] = useState(false);
 
-  const saveStripeKey = async () => {
-    setSavingStripeKey(true);
+
+
+  const saveAdminOrderEmails = async () => {
+    setSavingAdminOrderEmails(true);
     try {
       const adminCheck = await fetch('/api/check-admin');
       const { isAdmin, error } = await adminCheck.json();
@@ -85,23 +81,23 @@ export default function SettingsPage() {
           title: "Fejl",
           description: error || 'Du har ikke administrator rettigheder'
         });
-        setSavingStripeKey(false);
+        setSavingAdminOrderEmails(false);
         return;
       }
       const { error: updateError } = await supabase
         .from('site_settings')
         .upsert({
-          key: 'stripe_secret_key',
-          value: stripeKeyInput,
+          key: 'admin_order_emails',
+          value: adminOrderEmails,
           updated_at: new Date().toISOString()
         }, { onConflict: 'key', ignoreDuplicates: false });
       if (updateError) throw updateError;
-      setSettings(prev => ({ ...prev, stripeSecretKey: stripeKeyInput }));
-      toast({ title: "Success", description: "Stripe Secret Key gemt", className: "bg-green-500 text-white" });
+      setSettings(prev => ({ ...prev, adminOrderEmails }));
+      toast({ title: "Success", description: "Admin emails gemt", className: "bg-green-500 text-white" });
     } catch (error) {
-      toast({ variant: "destructive", title: "Fejl", description: error instanceof Error ? error.message : 'Kunne ikke gemme Stripe Secret Key' });
+      toast({ variant: "destructive", title: "Fejl", description: error instanceof Error ? error.message : 'Kunne ikke gemme admin emails' });
     } finally {
-      setSavingStripeKey(false);
+      setSavingAdminOrderEmails(false);
     }
   };
 
@@ -136,36 +132,7 @@ export default function SettingsPage() {
     }
   };
 
-  const saveStripePublishableKey = async () => {
-    setSavingStripePublishableKey(true);
-    try {
-      const adminCheck = await fetch('/api/check-admin');
-      const { isAdmin, error } = await adminCheck.json();
-      if (!adminCheck.ok || error || !isAdmin) {
-        toast({
-          variant: "destructive",
-          title: "Fejl",
-          description: error || 'Du har ikke administrator rettigheder'
-        });
-        setSavingStripePublishableKey(false);
-        return;
-      }
-      const { error: updateError } = await supabase
-        .from('site_settings')
-        .upsert({
-          key: 'stripe_publishable_key',
-          value: stripePublishableKeyInput,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'key', ignoreDuplicates: false });
-      if (updateError) throw updateError;
-      setSettings(prev => ({ ...prev, stripePublishableKey: stripePublishableKeyInput }));
-      toast({ title: "Success", description: "Stripe Publishable Key gemt", className: "bg-green-500 text-white" });
-    } catch (error) {
-      toast({ variant: "destructive", title: "Fejl", description: error instanceof Error ? error.message : 'Kunne ikke gemme Stripe Publishable Key' });
-    } finally {
-      setSavingStripePublishableKey(false);
-    }
-  };
+
 
 
   const saveGridSettings = async (key: string, newValue: GridSettings) => {
@@ -278,6 +245,36 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Admin emails for ordre */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Admin emails for ordrer</CardTitle>
+              <CardDescription>
+                Indtast de emails (kommasepareret) som skal modtage besked når der laves en reservation.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Label htmlFor="admin-order-emails">Emails</Label>
+              <input
+                id="admin-order-emails"
+                type="text"
+                value={adminOrderEmails}
+                onChange={e => setAdminOrderEmails(e.target.value)}
+                className="w-full border rounded px-3 py-2"
+                placeholder="admin1@email.dk,admin2@email.dk"
+                autoComplete="off"
+              />
+              <button
+                onClick={saveAdminOrderEmails}
+                disabled={savingAdminOrderEmails}
+                className="bg-primary text-white rounded px-4 py-2 disabled:opacity-50"
+              >
+                Gem emails
+              </button>
+              {settings.adminOrderEmails && <div className="text-xs text-green-600">Emails er gemt</div>}
+            </CardContent>
+          </Card>
+
           {/* Thank You-side tekst */}
           <Card>
             <CardHeader>
@@ -307,76 +304,6 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Stripe API Keys Sektion */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Stripe API Keys</CardTitle>
-              <CardDescription>
-                Indtast både din Stripe Secret Key og Publishable Key for at aktivere betalinger på platformen.<br />
-                <span className="text-xs text-gray-400">(Gemmes sikkert i databasen)</span>
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="stripe-publishable-key">Stripe Publishable Key</Label>
-                <div className="flex gap-2">
-                  <input
-                    id="stripe-publishable-key"
-                    type={showPublishable ? "text" : "password"}
-                    value={stripePublishableKeyInput}
-                    onChange={e => setStripePublishableKeyInput(e.target.value)}
-                    className="w-full border rounded px-3 py-2"
-                    placeholder="pk_live_..."
-                    autoComplete="off"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPublishable(v => !v)}
-                    className="px-3 py-2 border rounded text-xs"
-                  >
-                    {showPublishable ? "Skjul" : "Vis"}
-                  </button>
-                </div>
-                <button
-                  onClick={saveStripePublishableKey}
-                  disabled={savingStripePublishableKey}
-                  className="bg-primary text-white rounded px-4 py-2 mt-2 disabled:opacity-50"
-                >
-                  Gem Publishable Key
-                </button>
-                {settings.stripePublishableKey && <div className="text-xs text-green-600">Publishable Key er gemt</div>}
-              </div>
-              <div>
-                <Label htmlFor="stripe-key">Stripe Secret Key</Label>
-                <div className="flex gap-2">
-                  <input
-                    id="stripe-key"
-                    type={showSecret ? "text" : "password"}
-                    value={stripeKeyInput}
-                    onChange={e => setStripeKeyInput(e.target.value)}
-                    className="w-full border rounded px-3 py-2"
-                    placeholder="sk_live_..."
-                    autoComplete="off"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSecret(v => !v)}
-                    className="px-3 py-2 border rounded text-xs"
-                  >
-                    {showSecret ? "Skjul" : "Vis"}
-                  </button>
-                </div>
-                <button
-                  onClick={saveStripeKey}
-                  disabled={savingStripeKey}
-                  className="bg-primary text-white rounded px-4 py-2 mt-2 disabled:opacity-50"
-                >
-                  Gem Secret Key
-                </button>
-                {settings.stripeSecretKey && <div className="text-xs text-green-600">Secret Key er gemt</div>}
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Layout Indstillinger */}
           <Card>

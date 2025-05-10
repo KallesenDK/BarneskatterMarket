@@ -24,18 +24,7 @@ export default function ProductsPage() {
   const [productLimits, setProductLimits] = useState({ productLimit: 0, usedProducts: 0, availableProducts: 0 });
   const { toast } = useToast();
   const justCreated = searchParams.get('created') === 'true';
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const { supabase } = useSupabase();
-  const [userId, setUserId] = useState<string | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const { toast } = useToast();
-  
-  const justCreated = searchParams.get('created') === 'true';
-  
+
   useEffect(() => {
     if (justCreated) {
       toast({

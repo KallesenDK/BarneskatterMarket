@@ -354,7 +354,13 @@ export default function ProductsPage() {
                   {formatMoney(product.price)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {product.created_at ? formatRelativeDate(product.created_at as string) : ''}
+                  {product.created_at
+  ? formatRelativeDate(
+      typeof product.created_at === 'string'
+        ? product.created_at
+        : product.created_at.toISOString()
+    )
+  : ''}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <Link

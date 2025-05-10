@@ -365,12 +365,18 @@ export default function ProductsPage() {
                   </Link>
                   {/* Debug: Log checkout item */}
                   {(() => {
-                    const checkoutObj = { id: product.id, title: product.title, price: product.price, image: product.images?.[0] || product.image_url, stripe_price_id: product.stripe_price_id };
+                    const checkoutObj = { id: product.id, title: product.title, price: product.price, image: product.images?.[0] || product.image_url, stripe_price_id: product.stripe_price_id || '' };
                     console.log('Checkout-link object for', product.title, ':', checkoutObj);
                     return null;
                   })()}
                   <Link
-                    href={product.stripe_price_id ? `/checkout?items=${encodeURIComponent(JSON.stringify([{ id: product.id, title: product.title, price: product.price, image: product.images?.[0] || product.image_url, stripe_price_id: product.stripe_price_id }]))}` : '#'}
+                    href={`/checkout?items=${encodeURIComponent(JSON.stringify([{ 
+                      id: product.id, 
+                      title: product.title, 
+                      price: product.price, 
+                      image: product.images?.[0] || product.image_url, 
+                      stripe_price_id: product.stripe_price_id || ''
+                    }]))}`}
                     className={`ml-4 text-white px-3 py-1 rounded ${product.stripe_price_id ? 'bg-[#1AA49A] hover:bg-[#158F86]' : 'bg-gray-400 cursor-not-allowed'}`}
                     title={product.stripe_price_id ? '' : 'Dette produkt mangler Stripe price og kan ikke købes'}
                     aria-disabled={!product.stripe_price_id}

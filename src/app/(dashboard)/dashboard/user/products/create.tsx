@@ -37,8 +37,12 @@ export default function CreateProductPage() {
     setError(null);
     setLoading(true);
     // Validate all required fields
-    for (const key of ["title", "description", "price", "discount_price", "images", "tags", "category", "expires_at", "user_id", "condition", "location", "butik"]) {
-      if (!product[key] || (Array.isArray(product[key]) && product[key].length === 0)) {
+    const requiredFields: (keyof typeof product)[] = [
+      "title", "description", "price", "discount_price", "images", "tags", "category", "expires_at", "user_id", "condition", "location", "butik"
+    ];
+    for (const key of requiredFields) {
+      const value = product[key];
+      if (!value || (Array.isArray(value) && value.length === 0)) {
         setError("Alle felter skal udfyldes.");
         setLoading(false);
         return;

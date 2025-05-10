@@ -108,6 +108,12 @@ function CheckoutPage() {
     if (isProcessing) return;
     setIsProcessing(true);
     setError(null);
+    // Tjek at email og emailConfirm er ens
+    if (formData.email !== formData.emailConfirm) {
+      setError('De to e-mailadresser matcher ikke.');
+      setIsProcessing(false);
+      return;
+    }
     try {
       if (!cartItems || cartItems.length === 0) throw new Error('cartItems er tom!');
       if (stripeCartItems.length === 0) throw new Error('Ingen produkter med Stripe price sat i kurven.');

@@ -445,18 +445,7 @@ router.push('/dashboard/user/products');
           />
         </div>
 
-        {/* Visninger (readonly) */}
-        <div>
-          <label htmlFor="views" className="block text-sm font-medium text-gray-700">Antal visninger</label>
-          <input
-            type="number"
-            name="views"
-            id="views"
-            value={formData.views}
-            readOnly
-            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-100 rounded-md bg-gray-100"
-          />
-        </div>
+
 
         {/* Billeder */}
         <div>

@@ -92,7 +92,7 @@ export default function ProductsPage() {
           stripe_price_id: item.stripe_price_id ?? '',
           status: item.status || '',
           featured: !!item.featured,
-          category_name: item.category_name || '',
+          category_name: item.category_name || ''
         })) as Product[]
 
       } catch (error) {

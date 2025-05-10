@@ -430,35 +430,7 @@ router.push('/dashboard/user/products');
           />
         </div>
 
-        {/* Status */}
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
-          <select
-            name="status"
-            id="status"
-            value={formData.status}
-            onChange={handleChange}
-            className="shadow-sm focus:ring-[#1AA49A] focus:border-[#1AA49A] block w-full sm:text-sm border-gray-300 rounded-md"
-          >
-            <option value="active">Aktiv</option>
-            <option value="draft">Kladde</option>
-            <option value="sold">Solgt</option>
-          </select>
-        </div>
 
-        {/* Udvalgt/featured */}
-        <div>
-          <label htmlFor="featured" className="block text-sm font-medium text-gray-700">Udvalgt (featured)</label>
-          <input
-            type="checkbox"
-            name="featured"
-            id="featured"
-            checked={formData.featured}
-            onChange={e => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
-            className="mr-2"
-          />
-          <span>{formData.featured ? 'Ja' : 'Nej'}</span>
-        </div>
 
         {/* Butik */}
         <div>

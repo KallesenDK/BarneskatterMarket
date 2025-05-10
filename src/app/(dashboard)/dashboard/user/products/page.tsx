@@ -302,7 +302,7 @@ export default function ProductsPage() {
                   <input
                     type="checkbox"
                     className="h-4 w-4 text-[#1AA49A] focus:ring-[#1AA49A] border-gray-300 rounded"
-                    checked={selectedProducts.includes(product.id)}
+                    checked={selectedProducts.includes(product.id ?? '')}
                     onChange={(e) => {
                       if (e.target.checked) {
                         setSelectedProducts([...selectedProducts, product.id].filter(Boolean) as string[]);

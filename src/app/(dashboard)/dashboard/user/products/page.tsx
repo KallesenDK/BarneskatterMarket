@@ -21,6 +21,17 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [productLimits, setProductLimits] = useState({ productLimit: 0, usedProducts: 0, availableProducts: 0 });
+  const { toast } = useToast();
+  const justCreated = searchParams.get('created') === 'true';
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { supabase } = useSupabase();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const { toast } = useToast();
   
   const justCreated = searchParams.get('created') === 'true';
@@ -40,17 +51,29 @@ export default function ProductsPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setUserId(user.id);
+          // Hent produkt-slots fra profil
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('productLimit, usedProducts, availableProducts')
+            .eq('id', user.id)
+            .single();
+          if (!profileError && profile) {
+            setProductLimits({
+              productLimit: profile.productLimit || 0,
+              usedProducts: profile.usedProducts || 0,
+              availableProducts: profile.availableProducts || 0,
+            });
+          }
         }
       } catch (error) {
         console.error('Fejl ved hentning af bruger:', error);
         toast({
-  title: 'Kunne ikke hente brugeroplysninger',
-  description: 'Prøv at genindlæse siden.',
-  variant: 'destructive',
-});
+          title: 'Kunne ikke hente brugeroplysninger',
+          description: 'Prøv at genindlæse siden.',
+          variant: 'destructive',
+        });
       }
     };
-    
     getUserSession();
   }, [supabase]);
 
@@ -220,6 +243,21 @@ export default function ProductsPage() {
   console.log('Render products:', products);
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Produkt-slot info */}
+      <div className="mb-4 p-4 bg-white rounded-lg shadow flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className="text-sm text-gray-700">
+          <span className="font-semibold">Produktpladser:</span>{' '}
+          <span className="text-[#1AA49A] font-bold">{productLimits.availableProducts}</span> ud af <span className="font-bold">{productLimits.productLimit}</span> mulige
+          {productLimits.productLimit > 0 && (
+            <span className="ml-2 text-gray-500">({productLimits.usedProducts} brugt)</span>
+          )}
+        </div>
+        <div className="mt-2 md:mt-0">
+          <Link href="/product-slots" className="inline-block px-4 py-2 bg-[#1AA49A] text-white rounded hover:bg-[#158F86] transition-colors">
+            Køb flere pladser
+          </Link>
+        </div>
+      </div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Mine produkter</h1>
         <div className="flex gap-4">

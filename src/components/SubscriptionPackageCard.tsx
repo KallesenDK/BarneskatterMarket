@@ -21,6 +21,7 @@ interface SubscriptionPackage {
   product_limit: number;
   price: number;
   is_active: boolean;
+  stripe_price_id: string;
   is_popular?: boolean;
   discount_price?: number | null;
   discount_start_date?: string | null;

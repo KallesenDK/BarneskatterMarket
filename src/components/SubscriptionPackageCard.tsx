@@ -62,7 +62,7 @@ export function SubscriptionPackageCard({ package: pkg }: SubscriptionPackageCar
     });
     const data = await res.json();
     if (data.url) {
-      window.location.href = data.url;
+      window.open(data.url, '_blank', 'width=500,height=800');
     } else {
       alert('Kunne ikke starte betaling: ' + (data.error || 'Ukendt fejl'));
     }

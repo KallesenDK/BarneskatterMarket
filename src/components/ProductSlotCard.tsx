@@ -121,7 +121,7 @@ export function ProductSlotCard({ slot }: ProductSlotCardProps) {
                 : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
             }`}
           >
-            Vælg {slot.slot_count} pladser
+            Køb {slot.slot_count} pladser mere
           </button>
         </div>
       </div>

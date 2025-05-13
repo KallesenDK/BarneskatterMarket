@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useCart } from '@/components/Cart/CartProvider'
 import { Check } from 'lucide-react'
 import {
   Card,
@@ -46,9 +47,18 @@ export function SubscriptionPackageCard({ package: pkg }: SubscriptionPackageCar
     return Math.round(((pkg.price - pkg.discount_price) / pkg.price) * 100)
   }
 
-  const handleSelect = () => {
-    router.push(`/checkout?package=${pkg.id}`)
-  }
+  const { addItem } = useCart();
+const handleSelect = () => {
+  addItem({
+    id: pkg.id,
+    title: pkg.name,
+    price: isDiscountActive && pkg.discount_price ? pkg.discount_price : pkg.price,
+    type: 'package',
+    duration_weeks: pkg.duration_weeks,
+    product_limit: pkg.product_limit
+  });
+  router.push('/checkout');
+}
 
   const discountPercentage = calculateDiscount()
 

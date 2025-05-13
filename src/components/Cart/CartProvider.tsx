@@ -9,11 +9,19 @@ interface CartItem {
   title: string;
   price: number;
   image?: string;
+  type?: string;
+  duration_weeks?: number;
+  product_limit?: number;
+}
+
+interface AddItemResult {
+  success: boolean;
+  error?: string;
 }
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, 'quantity'>) => void;
+  addItem: (item: Omit<CartItem, 'quantity'>) => AddItemResult;
   removeItem: (itemId: string) => void;
   toggleCart: () => void;
   isOpen: boolean;
@@ -42,16 +50,49 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items]);
 
-  const addItem = (newItem: Omit<CartItem, 'quantity'>) => {
-    setItems(currentItems => {
-      const existingItem = currentItems.find(item => item.id === newItem.id);
-      if (existingItem) {
-        return currentItems; // Hvis varen allerede findes, gør ingenting
-      }
-      return [...currentItems, { ...newItem }];
-    });
-    setIsOpen(true); // Åbn kurven når et produkt tilføjes
-  };
+  const addItem = (newItem: Omit<CartItem, 'quantity'>): AddItemResult => {
+  // Find ud af hvad der allerede er i kurven
+  const currentItems = [...items];
+  const hasPackage = currentItems.some(i => i.type === 'package');
+  const hasSlot = currentItems.some(i => i.type === 'slot');
+  const hasProduct = currentItems.some(i => i.type === 'product');
+  const isPackage = newItem.type === 'package';
+  const isSlot = newItem.type === 'slot';
+  const isProduct = newItem.type === 'product';
+
+  // Regel 3: Produkter kan ikke købes sammen med slots/pakker
+  if ((isProduct && (hasSlot || hasPackage)) || ((isSlot || isPackage) && hasProduct)) {
+    return { success: false, error: 'Du kan desværre ikke reservere et produkt på samme tid som du køber pakker og slots.' };
+  }
+
+  // Regel 2: Slots kræver aktiv pakke og ingen pakke i kurven
+  if (isSlot) {
+    // Her bør du tjekke om brugeren har en aktiv pakke (kræver async kald normalt)
+    if (!hasPackage) {
+      return { success: false, error: 'Du skal have en aktiv pakke for at kunne købe slots.' };
+    }
+    if (hasPackage) {
+      // Må ikke være flere pakker i kurven
+      // (Hvis man vil forhindre slots + pakke i samme kurv, men ifølge regel 1 må de gerne kombineres)
+      // Så denne blok kan evt. fjernes hvis slots+pakkekøb er ok
+    }
+  }
+
+  // Regel 1: Pakker og slots må gerne kombineres
+  // Men kun én pakke ad gangen (hvis ønsket)
+  if (isPackage && hasPackage) {
+    return { success: false, error: 'Du kan kun købe én pakke ad gangen.' };
+  }
+
+  // Ingen dubletter
+  if (currentItems.find(item => item.id === newItem.id)) {
+    return { success: false, error: 'Denne vare er allerede i kurven.' };
+  }
+
+  setItems([...currentItems, { ...newItem }]);
+  setIsOpen(true);
+  return { success: true };
+};
 
   const removeItem = (itemId: string) => {
     setItems(currentItems => currentItems.filter(item => item.id !== itemId));

@@ -13,6 +13,7 @@ interface ProductSlot {
   discount_price: number | null
   discount_start_date: string | null
   discount_end_date: string | null
+  stripe_price_id: string;
 }
 
 interface ProductSlotCardProps {
@@ -39,8 +40,27 @@ export function ProductSlotCard({ slot }: ProductSlotCardProps) {
     return Math.round(((slot.price - slot.discount_price) / slot.price) * 100)
   }
 
-  const handleSelect = () => {
-    router.push(`/checkout?product-slots=${slot.id}`)
+  const handleSelect = async () => {
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceId: slot.stripe_price_id,
+          slotId: slot.id,
+          successUrl: window.location.origin + '/dashboard?checkout=success',
+          cancelUrl: window.location.href
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, '_blank', 'width=500,height=800');
+      } else {
+        alert('Kunne ikke starte betaling: ' + (data.error || 'Ukendt fejl'));
+      }
+    } catch (err) {
+      alert('Der opstod en fejl ved betaling. Prøv igen.');
+    }
   }
 
   const discountActive = isDiscountActive()

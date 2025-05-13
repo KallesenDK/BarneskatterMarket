@@ -47,17 +47,27 @@ export function SubscriptionPackageCard({ package: pkg }: SubscriptionPackageCar
     return Math.round(((pkg.price - pkg.discount_price) / pkg.price) * 100)
   }
 
-  const { addItem } = useCart();
-const handleSelect = () => {
-  addItem({
-    id: pkg.id,
-    title: pkg.name,
-    price: isDiscountActive && pkg.discount_price ? pkg.discount_price : pkg.price,
-    type: 'package',
-    duration_weeks: pkg.duration_weeks,
-    product_limit: pkg.product_limit
-  });
-  router.push('/checkout');
+  const handleSelect = async () => {
+  try {
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        priceId: pkg.stripe_price_id,
+        packageId: pkg.id,
+        successUrl: window.location.origin + '/dashboard?checkout=success',
+        cancelUrl: window.location.href
+      })
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert('Kunne ikke starte betaling: ' + (data.error || 'Ukendt fejl'));
+    }
+  } catch (err) {
+    alert('Der opstod en fejl ved betaling. Prøv igen.');
+  }
 }
 
   const discountPercentage = calculateDiscount()

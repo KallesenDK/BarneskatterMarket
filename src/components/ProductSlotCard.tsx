@@ -1,6 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 interface ProductSlot {
   id: string
@@ -22,6 +24,16 @@ interface ProductSlotCardProps {
 
 export function ProductSlotCard({ slot }: ProductSlotCardProps) {
   const router = useRouter()
+  const supabase = createClientComponentClient()
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setIsLoggedIn(!!user)
+    }
+    checkUser()
+  }, [])
 
   const isDiscountActive = () => {
     if (!slot.discount_price || !slot.discount_start_date || !slot.discount_end_date) {
@@ -41,6 +53,10 @@ export function ProductSlotCard({ slot }: ProductSlotCardProps) {
   }
 
   const handleSelect = async () => {
+    if (isLoggedIn === false) {
+      router.push('/auth/signup') 
+      return
+    }
     try {
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
@@ -121,7 +137,7 @@ export function ProductSlotCard({ slot }: ProductSlotCardProps) {
                 : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
             }`}
           >
-            Køb {slot.slot_count} pladser mere
+            {isLoggedIn === false ? 'login/opret for at købe' : `Køb ${slot.slot_count} pladser mere`}
           </button>
         </div>
       </div>

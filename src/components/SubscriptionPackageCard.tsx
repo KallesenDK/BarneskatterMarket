@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/components/Cart/CartProvider'
 import { Check } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import {
   Card,
   CardContent,
@@ -36,6 +38,16 @@ interface SubscriptionPackageCardProps {
 
 export function SubscriptionPackageCard({ package: pkg }: SubscriptionPackageCardProps) {
   const router = useRouter()
+  const supabase = createClientComponentClient()
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setIsLoggedIn(!!user)
+    }
+    checkUser()
+  }, [])
 
   const isDiscountActive = pkg.discount_price != null && 
     pkg.discount_start_date != null && 
@@ -49,27 +61,31 @@ export function SubscriptionPackageCard({ package: pkg }: SubscriptionPackageCar
   }
 
   const handleSelect = async () => {
-  try {
-    const res = await fetch('/api/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        priceId: pkg.stripe_price_id,
-        packageId: pkg.id,
-        successUrl: window.location.origin + '/dashboard?checkout=success',
-        cancelUrl: window.location.href
-      })
-    });
-    const data = await res.json();
-    if (data.url) {
-      window.open(data.url, '_blank', 'width=500,height=800');
-    } else {
-      alert('Kunne ikke starte betaling: ' + (data.error || 'Ukendt fejl'));
+    if (isLoggedIn === false) {
+      router.push('/auth/signup') 
+      return
     }
-  } catch (err) {
-    alert('Der opstod en fejl ved betaling. Prøv igen.');
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceId: pkg.stripe_price_id,
+          packageId: pkg.id,
+          successUrl: window.location.origin + '/dashboard?checkout=success',
+          cancelUrl: window.location.href
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, '_blank', 'width=500,height=800');
+      } else {
+        alert('Kunne ikke starte betaling: ' + (data.error || 'Ukendt fejl'));
+      }
+    } catch (err) {
+      alert('Der opstod en fejl ved betaling. Prøv igen.');
+    }
   }
-}
 
   const discountPercentage = calculateDiscount()
 
@@ -166,7 +182,7 @@ export function SubscriptionPackageCard({ package: pkg }: SubscriptionPackageCar
           onClick={handleSelect}
           disabled={isSoldOut}
         >
-          {isSoldOut ? 'Udsolgt' : 'Køb pakke'}
+          {isSoldOut ? 'Udsolgt' : (isLoggedIn === false ? 'login/opret for at købe' : 'Køb pakke')}
         </Button>
       </CardFooter>
     </Card>

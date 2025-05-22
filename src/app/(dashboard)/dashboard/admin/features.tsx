@@ -6,21 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { TruckIcon, TagIcon, UserIcon } from "lucide-react";
+import * as HeroIcons from "@heroicons/react/24/outline";
 
-// Ikon-mapping
-const ICON_OPTIONS = [
-  { label: "Truck", value: "truck", icon: <TruckIcon className="h-6 w-6" /> },
-  { label: "Tag", value: "tag", icon: <TagIcon className="h-6 w-6" /> },
-  { label: "User", value: "user", icon: <UserIcon className="h-6 w-6" /> },
-];
-const iconMap: Record<string, JSX.Element> = {
-  truck: <TruckIcon className="h-6 w-6" />,
-  tag: <TagIcon className="h-6 w-6" />,
-  user: <UserIcon className="h-6 w-6" />,
-};
+const HEROICON_NAMES = Object.keys(HeroIcons).filter(name => name.endsWith("Icon"));
 
 export default function FeatureAdminPage() {
+  // Heroicon søgefelt state
+  const [iconSearch, setIconSearch] = useState("");
+  const filteredIcons = HEROICON_NAMES.filter(name =>
+    name.toLowerCase().includes(iconSearch.toLowerCase())
+  );
   const supabase = createClientComponentClient();
   const [features, setFeatures] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -28,7 +23,7 @@ export default function FeatureAdminPage() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    icon: "truck",
+    icon: "AcademicCapIcon",
     position: 0,
   });
 
@@ -59,7 +54,7 @@ export default function FeatureAdminPage() {
     } else {
       await supabase.from("site_features").insert([{ ...form }]);
     }
-    setForm({ title: "", description: "", icon: "truck", position: 0 });
+    setForm({ title: "", description: "", icon: "AcademicCapIcon", position: 0 });
     setEditing(null);
     fetchFeatures();
   }
@@ -77,7 +72,7 @@ export default function FeatureAdminPage() {
     setForm({
       title: feature.title,
       description: feature.description,
-      icon: feature.icon,
+      icon: feature.icon || "AcademicCapIcon",
       position: feature.position,
     });
   }
@@ -103,20 +98,32 @@ export default function FeatureAdminPage() {
           />
         </div>
         <div>
-          <label className="block mb-1 font-medium">Ikon</label>
-          <div className="flex gap-4">
-            {ICON_OPTIONS.map(opt => (
-              <button
-                type="button"
-                key={opt.value}
-                className={`p-2 rounded border ${form.icon === opt.value ? "border-primary bg-muted" : "border-gray-200"}`}
-                onClick={() => setForm(f => ({ ...f, icon: opt.value }))}
-              >
-                {opt.icon}
-                <div className="text-xs mt-1">{opt.label}</div>
-              </button>
-            ))}
+          <label className="block mb-1 font-medium">Ikon (søg og vælg blandt alle Heroicons)</label>
+          <Input
+            placeholder="Søg ikon..."
+            value={iconSearch}
+            onChange={e => setIconSearch(e.target.value)}
+            className="mb-2"
+          />
+          <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto border rounded p-2 bg-white">
+            {filteredIcons.slice(0, 40).map((iconName) => {
+              const IconComp = HeroIcons[iconName];
+              return (
+                <button
+                  key={iconName}
+                  type="button"
+                  className={`flex flex-col items-center p-2 rounded border ${form.icon === iconName ? "border-primary bg-muted" : "border-gray-200"}`}
+                  onClick={() => setForm(f => ({ ...f, icon: iconName }))}
+                  title={iconName}
+                >
+                  {IconComp && <IconComp className="h-6 w-6" />}
+                  <span className="text-[10px] mt-1">{iconName.replace("Icon", "")}</span>
+                </button>
+              );
+            })}
+            {!filteredIcons.length && <span className="text-xs text-gray-400">Ingen ikoner matcher</span>}
           </div>
+          <div className="mt-2 text-xs text-gray-500">Valgt ikon: <b>{form.icon}</b></div>
         </div>
         <div>
           <label className="block mb-1 font-medium">Rækkefølge</label>
@@ -131,7 +138,7 @@ export default function FeatureAdminPage() {
           {editing ? "Opdater feature" : "Tilføj feature"}
         </Button>
         {editing && (
-          <Button type="button" variant="outline" onClick={() => { setEditing(null); setForm({ title: "", description: "", icon: "truck", position: 0 }); }}>
+          <Button type="button" variant="outline" onClick={() => { setEditing(null); setForm({ title: "", description: "", icon: "AcademicCapIcon", position: 0 }); }}>
             Annullér
           </Button>
         )}
@@ -140,7 +147,10 @@ export default function FeatureAdminPage() {
         {features.map(feature => (
           <Card key={feature.id} className="flex items-center gap-4 p-4 justify-between">
             <div className="flex items-center gap-4">
-              {iconMap[feature.icon] || <TruckIcon className="h-6 w-6" />}
+              {(() => {
+                const IconComp = HeroIcons[feature.icon];
+                return IconComp ? <IconComp className="h-6 w-6" /> : <HeroIcons.AcademicCapIcon className="h-6 w-6" />;
+              })()}
               <div>
                 <div className="font-semibold">{feature.title}</div>
                 <div className="text-sm text-muted-foreground">{feature.description}</div>

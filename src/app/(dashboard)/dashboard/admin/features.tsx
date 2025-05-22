@@ -107,7 +107,7 @@ export default function FeatureAdminPage() {
           />
           <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto border rounded p-2 bg-white">
             {filteredIcons.slice(0, 40).map((iconName) => {
-              const IconComp = HeroIcons[iconName];
+              const IconComp = HeroIcons[iconName as keyof typeof HeroIcons];
               return (
                 <button
                   key={iconName}
@@ -148,7 +148,7 @@ export default function FeatureAdminPage() {
           <Card key={feature.id} className="flex items-center gap-4 p-4 justify-between">
             <div className="flex items-center gap-4">
               {(() => {
-                const IconComp = HeroIcons[feature.icon];
+                const IconComp = HeroIcons[feature.icon as keyof typeof HeroIcons];
                 return IconComp ? <IconComp className="h-6 w-6" /> : <HeroIcons.AcademicCapIcon className="h-6 w-6" />;
               })()}
               <div>
